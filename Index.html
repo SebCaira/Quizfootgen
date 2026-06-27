@@ -1,0 +1,2983 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Quiz Foot Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #14141f;
+    --bg-input: #1e1e2e;
+    --border: #2a2a3e;
+    --text: #f0f0f5;
+    --text-dim: #8a8a9e;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --orange: #f97316;
+    --red: #ef4444;
+    --blue: #3b82f6;
+  }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+  /* ============ HEADER ============ */
+  .header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    background: rgba(20, 20, 31, 0.9);
+  }
+  .header h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+  }
+  .header h1 .accent { color: var(--green); }
+  .actions { display: flex; gap: 12px; }
+  .btn {
+    padding: 14px 24px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: white;
+  }
+  .btn-primary:hover { background: #059669; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--bg-input);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger {
+    background: var(--red);
+    color: white;
+  }
+  .btn-danger:hover { background: #dc2626; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+  /* ============ ÉDITEUR ============ */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+  .intro {
+    background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.1));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .intro h2 { font-size: 18px; margin-bottom: 8px; }
+  .intro p { color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+
+  .level-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 24px;
+    border-left: 6px solid;
+  }
+  .level-card.beginner { border-left-color: var(--green); }
+  .level-card.intermediate { border-left-color: var(--yellow); }
+  .level-card.pro { border-left-color: var(--orange); }
+  .level-card.expert { border-left-color: var(--red); }
+
+  .level-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .level-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    color: white;
+  }
+  .level-card.beginner .level-number { background: var(--green); }
+  .level-card.intermediate .level-number { background: var(--yellow); }
+  .level-card.pro .level-number { background: var(--orange); }
+  .level-card.expert .level-number { background: var(--red); }
+  .level-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+  }
+  .level-subtitle {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) {
+    .row { grid-template-columns: 1fr; }
+  }
+
+  .field-group {
+    background: var(--bg-input);
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid var(--border);
+  }
+  .field-group h3 {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field input[type="text"],
+  .level-card .club-block input[type="text"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.15s;
+  }
+  .field input[type="text"]:focus,
+  .level-card .club-block input[type="text"]:focus {
+    outline: none;
+    border-color: var(--green);
+  }
+  .club-block input[type="text"] { margin-bottom: 8px; }
+
+  /* Flag selector */
+  .flag-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .flag-preview {
+    width: 60px;
+    height: 40px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .flag-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .flag-select {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .flag-select:focus { outline: none; border-color: var(--green); }
+  .flag-select optgroup { background: var(--bg-card); }
+
+  /* Upload zone */
+  .upload-zone {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .upload-preview {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+    background: var(--bg);
+    border: 2px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .upload-preview .placeholder {
+    color: var(--text-dim);
+    font-size: 24px;
+  }
+  .upload-btn {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .upload-btn:hover {
+    background: var(--border);
+    border-color: var(--green);
+  }
+  .upload-btn input { display: none; }
+
+  .club-block {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+  }
+  .club-block:last-child { margin-bottom: 0; }
+  .club-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  /* ============ OVERLAY APERÇU ============ */
+  .preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .preview-overlay.active { display: flex; }
+  .preview-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+  }
+  .preview-close:hover { background: rgba(255,255,255,0.2); }
+
+  /* Export status */
+  .export-status {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    backdrop-filter: blur(10px);
+  }
+  .recording-dot {
+    width: 12px;
+    height: 12px;
+    background: red;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* ============ STAGE TIKTOK (animation) ============ */
+  .stage {
+    width: 1080px;
+    height: 1920px;
+    position: relative;
+    background: radial-gradient(ellipse at center, #1a1a2e 0%, #050505 70%);
+    overflow: hidden;
+    transform-origin: center;
+    transform: scale(calc(min(100vw / 1080, 100vh / 1920) * 0.95));
+    box-shadow: 0 0 80px rgba(0,0,0,0.8);
+  }
+  /* Fonds disponibles */
+  .stage.bg-stadium { background: radial-gradient(ellipse at center, #1a1a2e 0%, #050505 70%); }
+  .stage.bg-field {
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 0 80px, transparent 80px 160px),
+      linear-gradient(180deg, #0d4a1f 0%, #1a6b2e 50%, #0d4a1f 100%);
+  }
+  .stage.bg-night { background: linear-gradient(135deg, #0a0e27 0%, #1e3a8a 50%, #0a0e27 100%); }
+  .stage.bg-red { background: radial-gradient(ellipse at center, #7f1d1d 0%, #1a0505 70%); }
+  .stage.bg-neon {
+    background: linear-gradient(180deg, #1a0033 0%, #4a0e7c 40%, #ff006e 70%, #ff8500 100%);
+  }
+  .stage.bg-gold {
+    background: radial-gradient(ellipse at center, #423000 0%, #0a0500 70%);
+  }
+  .stage.bg-white {
+    background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+  }
+  .stage.bg-wave {
+    background:
+      radial-gradient(ellipse 800px 600px at 20% 20%, rgba(255,255,255,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse 600px 500px at 80% 30%, rgba(255,255,255,0.35) 0%, transparent 55%),
+      radial-gradient(ellipse 700px 700px at 50% 70%, rgba(135,206,235,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 500px 800px at 10% 90%, rgba(255,255,255,0.3) 0%, transparent 50%),
+      linear-gradient(160deg, #1e3a8a 0%, #2563eb 35%, #60a5fa 70%, #3b82f6 100%);
+  }
+  .stage.bg-custom { background-size: cover; background-position: center; }
+  /* En fond blanc, on inverse certains textes pour lisibilité */
+  .stage.bg-white .hook-text,
+  .stage.bg-white .question,
+  .stage.bg-white .countdown,
+  .stage.bg-white .reveal-name,
+  .stage.bg-white .outro-text,
+  .stage.bg-white .anim-club-name,
+  .stage.bg-white .level-counter { color: #0a0a0f; text-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .stage.bg-white .silhouette {
+    background: linear-gradient(180deg, rgba(20,20,40,0.85), rgba(20,20,40,0.55));
+  }
+  .particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    animation: float 8s infinite ease-in-out;
+  }
+  @keyframes float {
+    0%,100% { transform: translate(0,0); opacity: 0.3; }
+    50% { transform: translate(20px,-30px); opacity: 0.8; }
+  }
+  .scene {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .scene.active { opacity: 1; }
+
+  .hook-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(255,50,50,0.15) 0%, transparent 70%);
+  }
+  .hook-text {
+    font-family: 'Anton', sans-serif;
+    font-size: 200px; color: white;
+    text-align: center; line-height: 0.95;
+    letter-spacing: -2px;
+    text-shadow: 0 0 40px rgba(255,255,255,0.3);
+    animation: hookPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .hook-text .pct { color: #ff3838; font-size: 280px; display: block; }
+  .hook-text .lvl { color: #ffd700; }
+  .hook-emoji { font-size: 180px; margin-top: 40px; animation: bounce 1s infinite; }
+  @keyframes hookPop { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+  .level-banner {
+    position: absolute; top: 80px;
+    left: 50%; transform: translateX(-50%);
+    padding: 30px 80px; border-radius: 100px;
+    font-family: 'Anton', sans-serif;
+    font-size: 90px; color: white;
+    letter-spacing: 4px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 0 60px rgba(0,0,0,0.4), inset 0 0 40px rgba(255,255,255,0.2);
+    animation: bannerSlide 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+  }
+  .level-banner.beginner { background: linear-gradient(135deg, #10b981, #059669); }
+  .level-banner.intermediate { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .level-banner.pro { background: linear-gradient(135deg, #f97316, #ea580c); }
+  .level-banner.expert { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+  @keyframes bannerSlide { 0% { transform: translateX(-50%) translateY(-100px); opacity: 0; } 100% { transform: translateX(-50%) translateY(0); opacity: 1; } }
+
+  .level-counter {
+    position: absolute; top: 100px; right: 60px;
+    font-family: 'Anton', sans-serif;
+    font-size: 80px; color: rgba(255,255,255,0.7);
+    letter-spacing: 4px;
+  }
+  .level-counter .current { color: white; font-size: 110px; }
+
+  .silhouette-container {
+    position: absolute; top: 200px; left: 50%;
+    transform: translateX(-50%);
+    width: 700px; height: 800px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .silhouette {
+    width: 100%; height: 100%;
+    background: url('data:image/png;base64,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') center/contain no-repeat;
+    filter: drop-shadow(0 0 40px rgba(255,255,255,0.4));
+    animation: silhouettePulse 3s infinite ease-in-out;
+  }
+  /* Silhouette personnalisée à partir de la photo du joueur */
+  .silhouette.custom {
+    -webkit-mask: none;
+    mask: none;
+    background: none;
+  }
+  .silhouette.custom img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 40px rgba(255,255,255,0.5));
+    animation: silhouettePulse 3s infinite ease-in-out;
+  }
+  @keyframes silhouettePulse {
+    0%,100% { filter: drop-shadow(0 0 40px rgba(255,255,255,0.4)); }
+    50% { filter: drop-shadow(0 0 80px rgba(255,255,255,0.7)); }
+  }
+
+  .clubs-row {
+    position: absolute; bottom: 580px;
+    left: 0; right: 0;
+    display: flex; justify-content: center; gap: 30px; padding: 0 40px;
+  }
+  .anim-club {
+    width: 280px;
+    display: flex; flex-direction: column; align-items: center;
+    opacity: 0;
+    transform: scale(0.3) translateY(50px);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .anim-club.show { opacity: 1; transform: scale(1) translateY(0); }
+  .anim-badge {
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    overflow: visible;
+    position: relative;
+  }
+  /* Style "avec cercle blanc" (optionnel, comme avant) */
+  .stage.logo-circle .anim-badge {
+    background: white;
+    box-shadow: 0 0 50px rgba(255,255,255,0.3), 0 8px 25px rgba(0,0,0,0.4);
+    border: 6px solid rgba(255,255,255,0.5);
+    overflow: hidden;
+  }
+  .stage.logo-circle .anim-badge img { width: 80%; height: 80%; }
+  /* Style "sans fond" (par défaut, comme l'exemple TikTok) */
+  .anim-badge img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 18px rgba(0,0,0,0.45));
+  }
+  .anim-badge .badge-fallback {
+    font-family: 'Anton', sans-serif;
+    color: white;
+    font-size: 70px;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #4b5563, #1f2937);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  }
+  .anim-club-name {
+    margin-top: 18px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 900; font-size: 30px;
+    color: white; text-align: center;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1.1;
+    max-width: 260px;
+    word-wrap: break-word;
+  }
+
+  .question-block {
+    position: absolute; bottom: 140px;
+    left: 0; right: 0; text-align: center;
+  }
+  .question {
+    font-family: 'Anton', sans-serif;
+    font-size: 120px; color: white;
+    letter-spacing: 6px;
+    text-shadow: 0 6px 20px rgba(0,0,0,0.8);
+    margin-bottom: 30px;
+  }
+  .countdown {
+    display: inline-flex;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    border: 8px solid rgba(255,255,255,0.5);
+    align-items: center; justify-content: center;
+    font-family: 'Anton', sans-serif;
+    font-size: 90px; color: white;
+    box-shadow: 0 0 50px rgba(255,255,255,0.3);
+    transition: all 0.3s;
+  }
+  .countdown.urgent {
+    border-color: #ff3838; color: #ff3838;
+    box-shadow: 0 0 80px rgba(255,56,56,0.6);
+    animation: pulse 0.5s infinite;
+  }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+  .reveal {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    animation: revealZoom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes revealZoom {
+    0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .reveal-photo {
+    width: 700px; height: 900px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #4b5563, #1f2937);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 50px;
+    box-shadow: 0 0 100px rgba(255,255,255,0.4);
+    position: relative; overflow: hidden;
+  }
+  .reveal-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .reveal-photo .reveal-initials {
+    font-family: 'Anton', sans-serif;
+    font-size: 380px; color: rgba(255,255,255,0.95);
+    text-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    letter-spacing: -10px;
+    position: absolute;
+  }
+  .reveal-name {
+    font-family: 'Anton', sans-serif;
+    font-size: 180px; color: white;
+    letter-spacing: 2px;
+    text-shadow: 0 6px 20px rgba(0,0,0,0.8);
+    text-align: center; line-height: 0.95;
+  }
+  .reveal-flag {
+    margin-top: 30px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .reveal-flag img {
+    height: 100px;
+    width: auto;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    border: 3px solid rgba(255,255,255,0.3);
+  }
+  .reveal-flag .flag-text {
+    font-family: 'Anton', sans-serif;
+    font-size: 80px;
+    color: white;
+    letter-spacing: 4px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  }
+
+  .outro-text {
+    font-family: 'Anton', sans-serif;
+    font-size: 200px; color: white;
+    text-align: center; line-height: 0.95; letter-spacing: 2px;
+    animation: hookPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .outro-text .accent { color: #ffd700; font-size: 260px; display: block; }
+  .outro-arrow { font-size: 200px; animation: bounce 0.6s infinite; margin-top: 40px; }
+
+  /* Dialog modal */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: none;
+    align-items: center; justify-content: center;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 500px;
+    border: 1px solid var(--border);
+    margin: 20px;
+  }
+  .modal-content h2 { font-size: 22px; margin-bottom: 16px; }
+  .modal-content p { color: var(--text-dim); line-height: 1.6; margin-bottom: 20px; }
+  .modal-content ol { padding-left: 20px; color: var(--text); margin-bottom: 24px; line-height: 1.8; }
+  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+  /* ============================================ */
+  /* RESPONSIVE MOBILE                            */
+  /* ============================================ */
+  @media (max-width: 768px) {
+    .header {
+      padding: 14px 16px;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .header h1 {
+      font-size: 22px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .actions .btn {
+      padding: 10px 4px;
+      font-size: 12px;
+      gap: 4px;
+      letter-spacing: 0.3px;
+      min-height: 44px; /* taille tactile minimale */
+      justify-content: center;
+    }
+    .container { padding: 16px; }
+    .intro { padding: 16px; margin-bottom: 16px; }
+    .intro h2 { font-size: 16px; }
+    .intro p { font-size: 13px; }
+
+    .level-card { padding: 16px; margin-bottom: 16px; border-radius: 14px; }
+    .level-title { font-size: 18px; letter-spacing: 1px; }
+    .level-subtitle { font-size: 11px; }
+    .level-number { width: 38px; height: 38px; font-size: 18px; }
+
+    .row { grid-template-columns: 1fr; gap: 14px; }
+    .field-group { padding: 14px; }
+    .field-group h3 { font-size: 11px; }
+
+    .upload-zone { gap: 10px; }
+    .upload-preview { width: 56px; height: 56px; }
+    .upload-btn { font-size: 12px; padding: 10px; min-height: 42px; }
+
+    .club-block { padding: 12px; }
+    .club-label { font-size: 10px; }
+
+    .field input[type="text"],
+    .level-card .club-block input[type="text"] {
+      font-size: 16px; /* évite le zoom auto iOS */
+      padding: 10px 12px;
+    }
+    .flag-select { font-size: 16px; }
+
+    .logo-action-row { gap: 6px; }
+    .lib-btn { font-size: 11px; padding: 10px 6px; min-height: 42px; }
+
+    /* Settings panel responsive */
+    .settings-panel { padding: 16px; border-radius: 14px; }
+    .settings-row { grid-template-columns: 1fr; gap: 14px; }
+    .bg-options { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .bg-option .bg-label { font-size: 9px; }
+
+    .toggle-option { padding: 14px 8px; font-size: 11px; min-height: 56px; }
+    .toggle-option .icon { font-size: 22px; }
+
+    /* Modales en plein écran sur mobile */
+    .modal-content {
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      margin: 12px;
+      padding: 20px;
+    }
+    .modal-content h2 { font-size: 18px; }
+    .modal-content p, .modal-content ol { font-size: 13px; }
+    .modal-actions { flex-direction: column; gap: 8px; }
+    .modal-actions .btn { width: 100%; justify-content: center; }
+
+    /* Bibliothèque adaptée mobile */
+    .library-content { max-height: 95vh; border-radius: 14px 14px 0 0; align-self: flex-end; }
+    .library-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; padding: 14px; }
+    .lib-club { padding: 8px 4px; }
+    .lib-club-badge { width: 56px; height: 56px; }
+    .lib-club-name { font-size: 10px; }
+    .library-header h2 { font-size: 18px; }
+    .library-toolbar { padding: 10px 14px; gap: 6px; }
+    .lib-toolbar-btn { font-size: 11px; padding: 8px 10px; min-height: 38px; flex: 1; justify-content: center; }
+    .new-club-form { padding: 14px; }
+    .new-club-grid { grid-template-columns: 1fr; gap: 8px; }
+    .filter-chip { font-size: 11px; padding: 6px 10px; }
+  }
+
+  /* Très petits écrans */
+  @media (max-width: 380px) {
+    .actions { grid-template-columns: repeat(2, 1fr); }
+    .actions #resetBtn { grid-column: span 2; }
+    .bg-options { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* ============ PANNEAU PARAMÈTRES ============ */
+  .settings-panel {
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 24px;
+    border-left: 6px solid var(--blue);
+  }
+  .settings-panel .section-title {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px;
+  }
+  .settings-panel .section-title .icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .settings-panel h3 {
+    font-family: 'Anton', sans-serif;
+    font-size: 20px; letter-spacing: 2px;
+  }
+  .settings-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 768px) { .settings-row { grid-template-columns: 1fr; } }
+
+  .setting-block { }
+  .setting-block .setting-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .bg-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .bg-option {
+    aspect-ratio: 9/16;
+    border-radius: 10px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .bg-option.active {
+    border-color: var(--blue);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(59,130,246,0.5);
+  }
+  .bg-option:hover { transform: scale(1.05); }
+  .bg-option .bg-label {
+    position: absolute;
+    bottom: 4px; left: 4px; right: 4px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .bg-stadium-thumb { background: radial-gradient(ellipse at center, #1a1a2e 0%, #050505 70%); }
+  .bg-field-thumb {
+    background: 
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.15) 0 10px, transparent 10px 20px),
+      linear-gradient(180deg, #0d4a1f, #1a6b2e);
+  }
+  .bg-night-thumb { background: linear-gradient(135deg, #0a0e27, #1e3a8a, #0a0e27); }
+  .bg-red-thumb { background: radial-gradient(ellipse at center, #7f1d1d 0%, #1a0505 70%); }
+  .bg-neon-thumb { background: linear-gradient(180deg, #1a0033, #4a0e7c, #ff006e, #ff8500); }
+  .bg-gold-thumb { background: radial-gradient(ellipse at center, #423000 0%, #0a0500 70%); }
+  .bg-white-thumb { background: linear-gradient(180deg, #f8fafc, #cbd5e1); }
+  .bg-wave-thumb {
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.5), transparent 60%),
+      radial-gradient(ellipse at 80% 70%, rgba(255,255,255,0.3), transparent 60%),
+      linear-gradient(160deg, #1e3a8a, #60a5fa);
+  }
+  .bg-custom-thumb {
+    background: repeating-linear-gradient(45deg, #2a2a3e 0 8px, #1e1e2e 8px 16px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: var(--text-dim);
+  }
+  .bg-custom-thumb.has-image { background-size: cover; background-position: center; color: transparent; }
+
+  /* Toggle pour mode d'apparition des clubs */
+  .toggle-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: var(--bg-input);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .toggle-option {
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .toggle-option.active {
+    background: var(--blue);
+    color: white;
+    box-shadow: 0 2px 10px rgba(59,130,246,0.4);
+  }
+  .toggle-option .icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+  /* Range slider for countdown */
+  .countdown-control {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg-input);
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .countdown-control input[type="range"] {
+    flex: 1;
+    accent-color: var(--blue);
+  }
+  .countdown-value {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    color: var(--blue);
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .custom-bg-upload {
+    margin-top: 8px;
+    display: none;
+  }
+  .custom-bg-upload.show { display: block; }
+
+  /* ============ MODAL BIBLIOTHÈQUE DE CLUBS ============ */
+  .library-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .library-modal.active { display: flex; }
+  .library-content {
+    background: var(--bg-card);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .library-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .library-header h2 {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+  }
+  .library-close {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    border: none;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .library-close:hover { background: var(--border); }
+  .library-search {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .library-search input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .library-search input:focus { outline: none; border-color: var(--blue); }
+  .library-filters {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: 100px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-chip:hover { color: var(--text); }
+  .filter-chip.active {
+    background: var(--blue);
+    color: white;
+    border-color: var(--blue);
+  }
+  .library-grid {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+  }
+  .lib-club {
+    background: var(--bg-input);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 2px solid transparent;
+  }
+  .lib-club:hover {
+    background: var(--border);
+    transform: translateY(-2px);
+    border-color: var(--blue);
+  }
+  .lib-club-badge {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .lib-club-badge img { width: 80%; height: 80%; object-fit: contain; }
+  .lib-club-badge .fb {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Anton', sans-serif;
+    color: white;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+  }
+  .lib-club-name {
+    font-size: 11px;
+    color: var(--text);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .lib-empty {
+    grid-column: 1/-1;
+    text-align: center;
+    color: var(--text-dim);
+    padding: 40px;
+  }
+
+  /* Bouton bibliothèque dans le formulaire club */
+  .logo-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .lib-btn {
+    background: var(--blue);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .lib-btn:hover { background: #2563eb; }
+
+  /* Mode édition de la bibliothèque */
+  .library-toolbar {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .lib-toolbar-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .lib-toolbar-btn:hover { background: var(--border); }
+  .lib-toolbar-btn.active {
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
+  }
+
+  /* Vignette en mode édition */
+  .lib-club { position: relative; }
+  .lib-club .edit-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    border-radius: 12px;
+    padding: 8px;
+  }
+  .library-grid.edit-mode .lib-club .edit-overlay { display: flex; }
+  .lib-club .edit-btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+  }
+  .lib-club .edit-btn.danger { background: var(--red); }
+  .lib-club.has-custom::before {
+    content: '✨';
+    position: absolute;
+    top: 4px; right: 4px;
+    font-size: 14px;
+    z-index: 1;
+    background: var(--green);
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lib-club.is-user::after {
+    content: 'PERSO';
+    position: absolute;
+    top: 4px; left: 4px;
+    font-size: 8px;
+    z-index: 1;
+    background: var(--blue);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  /* Nouveau club form (inline modal) */
+  .new-club-form {
+    padding: 20px 24px;
+    background: var(--bg-input);
+    border-bottom: 1px solid var(--border);
+    display: none;
+  }
+  .new-club-form.show { display: block; }
+  .new-club-form h3 {
+    font-size: 14px;
+    margin-bottom: 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+  }
+  .new-club-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .new-club-grid input, .new-club-grid select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+  }
+  .new-club-grid input:focus { outline: none; border-color: var(--blue); }
+  .color-inputs {
+    display: flex;
+    gap: 8px;
+  }
+  .color-inputs input[type="color"] {
+    width: 40px;
+    height: 38px;
+    padding: 2px;
+    cursor: pointer;
+  }
+  .new-club-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>QUIZ FOOT <span class="accent">GENERATOR</span></h1>
+  <div class="actions">
+    <button class="btn btn-secondary" id="importBtn" title="Importer un fichier de sauvegarde">📤 Importer</button>
+    <button class="btn btn-secondary" id="exportDataBtn" title="Télécharger une sauvegarde de tes données">📥 Sauvegarder</button>
+    <button class="btn btn-secondary" id="resetBtn" title="Tout réinitialiser">🔄</button>
+    <button class="btn btn-secondary" id="previewBtn">🎮 Aperçu</button>
+    <button class="btn btn-primary" id="exportBtn">🎥 Exporter</button>
+  </div>
+</header>
+<input type="file" id="importInput" accept=".json,application/json" style="display:none;">
+
+<main class="container">
+  <div class="intro">
+    <h2>📋 Comment ça marche</h2>
+    <p>1. Uploade le logo de chaque club et la photo de chaque joueur (PNG ou JPG)<br>
+       2. Saisis les noms des clubs et des joueurs<br>
+       3. Clique <strong>Aperçu</strong> pour tester l'animation<br>
+       4. Clique <strong>Exporter en vidéo</strong> pour télécharger ta vidéo TikTok prête à poster</p>
+  </div>
+
+  <div id="settingsPanel"></div>
+  <div id="editor"></div>
+</main>
+
+<!-- ============ OVERLAY APERÇU ============ -->
+<div class="preview-overlay" id="previewOverlay">
+  <button class="preview-close" id="closePreview">✕</button>
+  <div class="export-status" id="exportStatus" style="display:none;">
+    <span class="recording-dot"></span>
+    <span id="exportStatusText">Enregistrement en cours...</span>
+  </div>
+  
+  <div class="stage" id="stage">
+    <div class="particle" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
+    <div class="particle" style="top: 30%; left: 70%; animation-delay: 1s;"></div>
+    <div class="particle" style="top: 60%; left: 40%; animation-delay: 2s;"></div>
+    <div class="particle" style="top: 80%; left: 85%; animation-delay: 3s;"></div>
+    <div class="particle" style="top: 20%; left: 90%; animation-delay: 4s;"></div>
+    <div class="particle" style="top: 50%; left: 10%; animation-delay: 5s;"></div>
+
+    <div class="scene" id="scene-hook">
+      <div class="hook-bg"></div>
+      <div class="hook-text">
+        <span class="pct">99%</span>
+        ÉCHOUENT<br>AU NIVEAU<br><span class="lvl">EXPERT</span>
+      </div>
+      <div class="hook-emoji">🧠⚽</div>
+    </div>
+
+    <div class="scene" id="scene-question">
+      <div class="level-banner" id="levelBanner"></div>
+      <div class="silhouette-container"><div class="silhouette" id="silhouette"></div></div>
+      <div class="clubs-row">
+        <div class="anim-club" id="club1">
+          <div class="anim-badge" id="badge1"></div>
+          <div class="anim-club-name" id="name1"></div>
+        </div>
+        <div class="anim-club" id="club2">
+          <div class="anim-badge" id="badge2"></div>
+          <div class="anim-club-name" id="name2"></div>
+        </div>
+        <div class="anim-club" id="club3">
+          <div class="anim-badge" id="badge3"></div>
+          <div class="anim-club-name" id="name3"></div>
+        </div>
+      </div>
+      <div class="question-block">
+        <div class="question">QUI SUIS-JE ?</div>
+        <div class="countdown" id="countdown">5</div>
+      </div>
+    </div>
+
+    <div class="scene" id="scene-reveal">
+      <div class="reveal">
+        <div class="reveal-photo" id="revealPhoto"></div>
+        <div class="reveal-name" id="revealName"></div>
+        <div class="reveal-flag" id="revealFlag"></div>
+      </div>
+    </div>
+
+    <div class="scene" id="scene-outro">
+      <div class="outro-text">T'AS EU<br><span class="accent">LEQUEL ?</span></div>
+      <div class="outro-arrow">👇</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL BIBLIOTHÈQUE DE CLUBS ============ -->
+<div class="library-modal" id="libraryModal">
+  <div class="library-content">
+    <div class="library-header">
+      <h2>📚 BIBLIOTHÈQUE DE CLUBS</h2>
+      <button class="library-close" id="libraryClose">✕</button>
+    </div>
+    <div class="library-toolbar">
+      <button class="lib-toolbar-btn" id="toggleEditMode">🛠️ Modifier les logos</button>
+      <button class="lib-toolbar-btn" id="toggleNewClubForm">➕ Nouveau club perso</button>
+    </div>
+    <div class="new-club-form" id="newClubForm">
+      <h3>➕ Ajouter un club personnalisé</h3>
+      <div class="new-club-grid">
+        <input type="text" id="newClubName" placeholder="Nom du club (ex: Paris FC)">
+        <input type="text" id="newClubAbbr" placeholder="Abréviation (ex: PFC)" maxlength="5">
+      </div>
+      <div class="new-club-grid">
+        <div class="color-inputs">
+          <input type="color" id="newClubColor1" value="#1e3a5f">
+          <input type="text" placeholder="Couleur 1 (optionnel)" value="#1e3a5f" id="newClubColor1Text" style="flex: 1;">
+        </div>
+        <div class="color-inputs">
+          <input type="color" id="newClubColor2" value="#87CEEB">
+          <input type="text" placeholder="Couleur 2 (optionnel)" value="#87CEEB" id="newClubColor2Text" style="flex: 1;">
+        </div>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label class="upload-btn" style="display: block; text-align: center;">
+          🖼️ <span id="newClubLogoLabel">Choisir un logo (optionnel)</span>
+          <input type="file" accept="image/*" id="newClubLogoInput">
+        </label>
+      </div>
+      <div class="new-club-actions">
+        <button class="btn btn-secondary" id="cancelNewClub">Annuler</button>
+        <button class="btn btn-primary" id="saveNewClub">✅ Ajouter à la bibliothèque</button>
+      </div>
+    </div>
+    <div class="library-search">
+      <input type="text" id="librarySearch" placeholder="🔍 Rechercher un club (ex: Real Madrid, OL, Inter...)">
+    </div>
+    <div class="library-filters" id="libraryFilters"></div>
+    <div class="library-grid" id="libraryGrid"></div>
+  </div>
+</div>
+
+<!-- Input file caché pour upload de logo personnalisé -->
+<input type="file" id="customLogoInput" accept="image/*" style="display:none;">
+
+<!-- ============ MODAL EXPORT ============ -->
+<div class="modal" id="exportModal">
+  <div class="modal-content">
+    <h2>🎥 Exporter en vidéo</h2>
+    <p>L'app va passer en plein écran (pour éviter de capturer les onglets Chrome) puis te demander quoi enregistrer.</p>
+    <ol>
+      <li>Clique <strong>Démarrer l'enregistrement</strong></li>
+      <li>L'écran passe en plein écran automatiquement</li>
+      <li>Une fenêtre demande quoi partager → choisis <strong>"Cet onglet"</strong> puis <strong>Partager</strong></li>
+      <li>L'animation joue automatiquement (~42 sec)</li>
+      <li>La vidéo se télécharge à la fin</li>
+    </ol>
+    <p style="font-size: 13px;">💡 La vidéo sort en <code>.webm</code>. Tu pourras la recadrer en 9:16 dans CapCut et ajouter ta musique avant export final en MP4 pour TikTok.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="cancelExport">Annuler</button>
+      <button class="btn btn-danger" id="startExport">🎬 Démarrer l'enregistrement</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================
+  // ÉTAT INITIAL
+  // ============================================
+  const DEFAULT_STATE = {
+    settings: {
+      background: 'stadium',
+      customBg: null,
+      clubsReveal: 'sequential',
+      countdownDuration: 5,
+      showHook: true,
+      showOutro: true,
+      logoStyle: 'plain',
+      useCustomSilhouette: false  // false = silhouette générique (recommandé), true = silhouette tirée de la photo
+    },
+    customLogos: {},   // { 'Manchester City': dataURL } — overrides pour clubs existants
+    userClubs: [],     // [{ name, abbr, colors, logo, league }] — clubs ajoutés par l'utilisateur
+    levels: [
+      {
+        label: 'DÉBUTANT', class: 'beginner',
+        clubs: [
+          { name: 'Le Havre', logo: null },
+          { name: 'Leicester', logo: null },
+          { name: 'Manchester City', logo: null }
+        ],
+        player: { name: 'Riyad Mahrez', photo: null, flag: 'DZ' }
+      },
+      {
+        label: 'INTERMÉDIAIRE', class: 'intermediate',
+        clubs: [
+          { name: 'Manchester United', logo: null },
+          { name: 'Lyon', logo: null },
+          { name: 'Barcelone', logo: null }
+        ],
+        player: { name: 'Memphis Depay', photo: null, flag: 'NL' }
+      },
+      {
+        label: 'PRO', class: 'pro',
+        clubs: [
+          { name: 'Naples', logo: null },
+          { name: 'Manchester United', logo: null },
+          { name: 'Valence', logo: null }
+        ],
+        player: { name: 'Edinson Cavani', photo: null, flag: 'UY' }
+      },
+      {
+        label: 'EXPERT', class: 'expert',
+        clubs: [
+          { name: 'Lens', logo: null },
+          { name: 'Manchester United', logo: null },
+          { name: 'Como', logo: null }
+        ],
+        player: { name: 'Raphaël Varane', photo: null, flag: 'FR' }
+      }
+    ]
+  };
+
+  let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+  // ============================================
+  // LISTE DES PAYS (codes ISO 2 lettres pour flagcdn.com)
+  // ============================================
+  const COUNTRIES = [
+    // Europe
+    { code: 'FR', name: 'France', region: 'Europe' },
+    { code: 'GB', name: 'Royaume-Uni', region: 'Europe' },
+    { code: 'ES', name: 'Espagne', region: 'Europe' },
+    { code: 'IT', name: 'Italie', region: 'Europe' },
+    { code: 'DE', name: 'Allemagne', region: 'Europe' },
+    { code: 'PT', name: 'Portugal', region: 'Europe' },
+    { code: 'NL', name: 'Pays-Bas', region: 'Europe' },
+    { code: 'BE', name: 'Belgique', region: 'Europe' },
+    { code: 'CH', name: 'Suisse', region: 'Europe' },
+    { code: 'AT', name: 'Autriche', region: 'Europe' },
+    { code: 'IE', name: 'Irlande', region: 'Europe' },
+    { code: 'SE', name: 'Suède', region: 'Europe' },
+    { code: 'NO', name: 'Norvège', region: 'Europe' },
+    { code: 'DK', name: 'Danemark', region: 'Europe' },
+    { code: 'FI', name: 'Finlande', region: 'Europe' },
+    { code: 'IS', name: 'Islande', region: 'Europe' },
+    { code: 'PL', name: 'Pologne', region: 'Europe' },
+    { code: 'CZ', name: 'République tchèque', region: 'Europe' },
+    { code: 'SK', name: 'Slovaquie', region: 'Europe' },
+    { code: 'HU', name: 'Hongrie', region: 'Europe' },
+    { code: 'RO', name: 'Roumanie', region: 'Europe' },
+    { code: 'BG', name: 'Bulgarie', region: 'Europe' },
+    { code: 'HR', name: 'Croatie', region: 'Europe' },
+    { code: 'RS', name: 'Serbie', region: 'Europe' },
+    { code: 'BA', name: 'Bosnie-Herzégovine', region: 'Europe' },
+    { code: 'SI', name: 'Slovénie', region: 'Europe' },
+    { code: 'MK', name: 'Macédoine du Nord', region: 'Europe' },
+    { code: 'AL', name: 'Albanie', region: 'Europe' },
+    { code: 'GR', name: 'Grèce', region: 'Europe' },
+    { code: 'TR', name: 'Turquie', region: 'Europe' },
+    { code: 'UA', name: 'Ukraine', region: 'Europe' },
+    { code: 'RU', name: 'Russie', region: 'Europe' },
+    { code: 'BY', name: 'Biélorussie', region: 'Europe' },
+    { code: 'GE', name: 'Géorgie', region: 'Europe' },
+    { code: 'AM', name: 'Arménie', region: 'Europe' },
+    // Afrique
+    { code: 'DZ', name: 'Algérie', region: 'Afrique' },
+    { code: 'MA', name: 'Maroc', region: 'Afrique' },
+    { code: 'TN', name: 'Tunisie', region: 'Afrique' },
+    { code: 'EG', name: 'Égypte', region: 'Afrique' },
+    { code: 'SN', name: 'Sénégal', region: 'Afrique' },
+    { code: 'CI', name: 'Côte d\'Ivoire', region: 'Afrique' },
+    { code: 'NG', name: 'Nigeria', region: 'Afrique' },
+    { code: 'CM', name: 'Cameroun', region: 'Afrique' },
+    { code: 'GH', name: 'Ghana', region: 'Afrique' },
+    { code: 'ML', name: 'Mali', region: 'Afrique' },
+    { code: 'GN', name: 'Guinée', region: 'Afrique' },
+    { code: 'CG', name: 'Congo', region: 'Afrique' },
+    { code: 'CD', name: 'RD Congo', region: 'Afrique' },
+    { code: 'BF', name: 'Burkina Faso', region: 'Afrique' },
+    { code: 'ZA', name: 'Afrique du Sud', region: 'Afrique' },
+    { code: 'AO', name: 'Angola', region: 'Afrique' },
+    { code: 'KE', name: 'Kenya', region: 'Afrique' },
+    { code: 'GA', name: 'Gabon', region: 'Afrique' },
+    { code: 'GP', name: 'Guadeloupe', region: 'Afrique' },
+    { code: 'TG', name: 'Togo', region: 'Afrique' },
+    { code: 'BJ', name: 'Bénin', region: 'Afrique' },
+    { code: 'MR', name: 'Mauritanie', region: 'Afrique' },
+    { code: 'KM', name: 'Comores', region: 'Afrique' },
+    { code: 'CV', name: 'Cap-Vert', region: 'Afrique' },
+    // Amérique du Sud
+    { code: 'BR', name: 'Brésil', region: 'Amérique du Sud' },
+    { code: 'AR', name: 'Argentine', region: 'Amérique du Sud' },
+    { code: 'UY', name: 'Uruguay', region: 'Amérique du Sud' },
+    { code: 'CL', name: 'Chili', region: 'Amérique du Sud' },
+    { code: 'CO', name: 'Colombie', region: 'Amérique du Sud' },
+    { code: 'PE', name: 'Pérou', region: 'Amérique du Sud' },
+    { code: 'EC', name: 'Équateur', region: 'Amérique du Sud' },
+    { code: 'PY', name: 'Paraguay', region: 'Amérique du Sud' },
+    { code: 'BO', name: 'Bolivie', region: 'Amérique du Sud' },
+    { code: 'VE', name: 'Venezuela', region: 'Amérique du Sud' },
+    // Amérique du Nord / Centrale
+    { code: 'MX', name: 'Mexique', region: 'Amérique du Nord' },
+    { code: 'US', name: 'États-Unis', region: 'Amérique du Nord' },
+    { code: 'CA', name: 'Canada', region: 'Amérique du Nord' },
+    { code: 'CR', name: 'Costa Rica', region: 'Amérique du Nord' },
+    { code: 'PA', name: 'Panama', region: 'Amérique du Nord' },
+    { code: 'JM', name: 'Jamaïque', region: 'Amérique du Nord' },
+    { code: 'HN', name: 'Honduras', region: 'Amérique du Nord' },
+    // Asie / Océanie / Moyen-Orient
+    { code: 'JP', name: 'Japon', region: 'Asie' },
+    { code: 'KR', name: 'Corée du Sud', region: 'Asie' },
+    { code: 'CN', name: 'Chine', region: 'Asie' },
+    { code: 'AU', name: 'Australie', region: 'Asie' },
+    { code: 'IR', name: 'Iran', region: 'Asie' },
+    { code: 'SA', name: 'Arabie Saoudite', region: 'Asie' },
+    { code: 'QA', name: 'Qatar', region: 'Asie' },
+    { code: 'AE', name: 'Émirats arabes unis', region: 'Asie' },
+    { code: 'IQ', name: 'Irak', region: 'Asie' },
+    { code: 'SY', name: 'Syrie', region: 'Asie' },
+    { code: 'JO', name: 'Jordanie', region: 'Asie' },
+    { code: 'LB', name: 'Liban', region: 'Asie' },
+    { code: 'IL', name: 'Israël', region: 'Asie' },
+    { code: 'IN', name: 'Inde', region: 'Asie' },
+    { code: 'TH', name: 'Thaïlande', region: 'Asie' },
+    { code: 'VN', name: 'Vietnam', region: 'Asie' },
+    { code: 'ID', name: 'Indonésie', region: 'Asie' },
+    { code: 'PH', name: 'Philippines', region: 'Asie' },
+    { code: 'NZ', name: 'Nouvelle-Zélande', region: 'Asie' }
+  ];
+
+  // Convertit un emoji drapeau (ex: 🇩🇿) en code pays (ex: 'DZ')
+  function emojiToCountryCode(value) {
+    if (!value) return '';
+    if (/^[A-Z]{2}$/.test(value)) return value; // déjà un code
+    const codes = [...value].map(c => c.codePointAt(0));
+    if (codes.length === 2 && codes[0] >= 0x1F1E6 && codes[0] <= 0x1F1FF && codes[1] >= 0x1F1E6 && codes[1] <= 0x1F1FF) {
+      return String.fromCharCode(codes[0] - 0x1F1E6 + 65) + String.fromCharCode(codes[1] - 0x1F1E6 + 65);
+    }
+    return '';
+  }
+
+  // URL du drapeau via flagcdn.com
+  function getFlagURL(code, size = 320) {
+    if (!code) return '';
+    return `https://flagcdn.com/w${size}/${code.toLowerCase()}.png`;
+  }
+
+  // ============================================
+  // PERSISTANCE LOCALSTORAGE
+  // ============================================
+  function saveState() {
+    try {
+      localStorage.setItem('quiz-foot-state', JSON.stringify(state));
+    } catch(e) {
+      console.warn('localStorage plein, données non sauvegardées');
+    }
+  }
+  function loadState() {
+    try {
+      const saved = localStorage.getItem('quiz-foot-state');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.settings) parsed.settings = JSON.parse(JSON.stringify(DEFAULT_STATE.settings));
+        parsed.settings = Object.assign({}, DEFAULT_STATE.settings, parsed.settings);
+        if (!parsed.customLogos) parsed.customLogos = {};
+        if (!parsed.userClubs) parsed.userClubs = [];
+        // Migration : convertir les anciens emojis de drapeaux en codes pays
+        if (parsed.levels) {
+          parsed.levels.forEach(level => {
+            if (level.player && level.player.flag) {
+              const converted = emojiToCountryCode(level.player.flag);
+              if (converted) level.player.flag = converted;
+            }
+          });
+        }
+        state = parsed;
+      }
+    } catch(e) {
+      console.warn('Erreur chargement state');
+    }
+  }
+
+  // ============================================
+  // REDIMENSIONNEMENT D'IMAGE AVANT STOCKAGE
+  // ============================================
+  function resizeImage(file, maxW, maxH, quality = 0.85, format = 'auto') {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          const ratio = Math.min(maxW / width, maxH / height, 1);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          // PNG si fichier d'origine PNG (préserve la transparence), JPEG sinon
+          const useExplicit = format !== 'auto';
+          const isPNG = useExplicit ? (format === 'png') : (file.type === 'image/png');
+          if (isPNG) {
+            resolve(canvas.toDataURL('image/png'));
+          } else {
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          }
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Supprime automatiquement le fond uniforme d'un logo uploadé (blanc, noir, ou autre).
+  // - Analyse la bordure pour détecter la couleur du fond
+  // - Si la bordure est uniforme → rend transparent les pixels proches du fond
+  // - Si la bordure est variée (logo déjà transparent ou complexe) → ne touche pas
+  function removeBackgroundFromLogo(logoDataURL) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+
+          // Vérifie si l'image a déjà des pixels transparents
+          let hasTransparency = false;
+          for (let i = 3; i < data.length; i += 4) {
+            if (data[i] < 250) { hasTransparency = true; break; }
+          }
+          if (hasTransparency) {
+            // Logo déjà avec fond transparent → ne touche pas
+            resolve(logoDataURL);
+            return;
+          }
+
+          // Échantillonne toute la bordure (4px d'épaisseur)
+          const borderThickness = 4;
+          const rs = [], gs = [], bs = [];
+          for (let y = 0; y < canvas.height; y++) {
+            for (let x = 0; x < canvas.width; x++) {
+              if (x < borderThickness || x >= canvas.width - borderThickness ||
+                  y < borderThickness || y >= canvas.height - borderThickness) {
+                const i = (y * canvas.width + x) * 4;
+                rs.push(data[i]);
+                gs.push(data[i + 1]);
+                bs.push(data[i + 2]);
+              }
+            }
+          }
+          // Médiane
+          rs.sort((a, b) => a - b);
+          gs.sort((a, b) => a - b);
+          bs.sort((a, b) => a - b);
+          const m = Math.floor(rs.length / 2);
+          const bgR = rs[m], bgG = gs[m], bgB = bs[m];
+
+          // Calcule la variance de la bordure pour savoir si le fond est uniforme
+          let variance = 0;
+          for (let i = 0; i < rs.length; i++) {
+            const diff = Math.abs(rs[i] - bgR) + Math.abs(gs[i] - bgG) + Math.abs(bs[i] - bgB);
+            variance += diff;
+          }
+          variance /= rs.length;
+
+          if (variance > 30) {
+            // Bordure non uniforme → on ne touche pas (logo complexe)
+            resolve(logoDataURL);
+            return;
+          }
+
+          // Supprime le fond (seuil modéré pour préserver les détails)
+          const threshold = 55;
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            const dist = Math.sqrt((r - bgR) ** 2 + (g - bgG) ** 2 + (b - bgB) ** 2);
+            if (dist < threshold) {
+              data[i + 3] = 0; // Transparent
+            }
+            // Sinon on garde les couleurs originales du logo
+          }
+          ctx.putImageData(imageData, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } catch (e) {
+          resolve(logoDataURL);
+        }
+      };
+      img.onerror = () => resolve(logoDataURL);
+      img.src = logoDataURL;
+    });
+  }
+
+  // Génère une silhouette blanche à partir d'une photo
+  // - Échantillonne TOUTE la bordure (8px) pour détecter le fond
+  // - Utilise la médiane (plus robuste que la moyenne pour fonds variés)
+  // - Force le sujet en BLANC 100% opaque (aucun détail visible)
+  function generateSilhouetteFromPhoto(photoDataURL) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          // Réduit la résolution pour accélérer (qualité largement suffisante)
+          const maxSize = 500;
+          const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const imageData = ctx.getImageData(0, 0, w, h);
+          const data = imageData.data;
+
+          // Échantillonne TOUS les pixels de la bordure (8px d'épaisseur)
+          const borderThickness = 8;
+          const rs = [], gs = [], bs = [];
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              if (x < borderThickness || x >= w - borderThickness ||
+                  y < borderThickness || y >= h - borderThickness) {
+                const i = (y * w + x) * 4;
+                rs.push(data[i]);
+                gs.push(data[i + 1]);
+                bs.push(data[i + 2]);
+              }
+            }
+          }
+          // Médiane des couleurs de bordure
+          rs.sort((a, b) => a - b);
+          gs.sort((a, b) => a - b);
+          bs.sort((a, b) => a - b);
+          const m = Math.floor(rs.length / 2);
+          const bgR = rs[m], bgG = gs[m], bgB = bs[m];
+
+          // Seuil plus permissif pour bien capturer le sujet
+          const threshold = 85;
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            const dist = Math.sqrt((r - bgR) ** 2 + (g - bgG) ** 2 + (b - bgB) ** 2);
+            if (dist < threshold) {
+              // Fond → transparent total
+              data[i] = 0;
+              data[i + 1] = 0;
+              data[i + 2] = 0;
+              data[i + 3] = 0;
+            } else {
+              // Sujet → BLANC TOTAL 100% opaque (aucun détail conservé)
+              data[i] = 255;
+              data[i + 1] = 255;
+              data[i + 2] = 255;
+              data[i + 3] = 255;
+            }
+          }
+          ctx.putImageData(imageData, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = photoDataURL;
+    });
+  }
+
+  // ============================================
+  // INITIALES depuis "Riyad Mahrez" -> "RM"
+  // ============================================
+  function getInitials(name) {
+    return name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+  function getShortBadge(name) {
+    return name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 4);
+  }
+
+  // ============================================
+  // BIBLIOTHÈQUE DE CLUBS (~100 clubs)
+  // logo = URL Wikipedia (si dispo), sinon fallback badge stylisé aux vraies couleurs
+  // ============================================
+  const CLUB_LIBRARY = [
+    // ===== PREMIER LEAGUE =====
+    { name: 'Arsenal', league: 'Premier League', abbr: 'ARS', colors: ['#EF0107','#FFFFFF'], logo: 'https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg' },
+    { name: 'Aston Villa', league: 'Premier League', abbr: 'AVL', colors: ['#670E36','#95BFE5'], logo: 'https://upload.wikimedia.org/wikipedia/en/9/9f/Aston_Villa_FC_new_crest.svg' },
+    { name: 'Bournemouth', league: 'Premier League', abbr: 'BOU', colors: ['#DA291C','#000000'] },
+    { name: 'Brentford', league: 'Premier League', abbr: 'BRE', colors: ['#E30613','#FFFFFF'] },
+    { name: 'Brighton', league: 'Premier League', abbr: 'BHA', colors: ['#0057B8','#FFCD00'] },
+    { name: 'Chelsea', league: 'Premier League', abbr: 'CHE', colors: ['#034694','#FFFFFF'], logo: 'https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg' },
+    { name: 'Crystal Palace', league: 'Premier League', abbr: 'CRY', colors: ['#1B458F','#C4122E'] },
+    { name: 'Everton', league: 'Premier League', abbr: 'EVE', colors: ['#003399','#FFFFFF'] },
+    { name: 'Fulham', league: 'Premier League', abbr: 'FUL', colors: ['#FFFFFF','#000000'] },
+    { name: 'Le Havre', league: 'Ligue 1', abbr: 'HAC', colors: ['#87CEEB','#1e3a5f'] },
+    { name: 'Leicester', league: 'Premier League', abbr: 'LCFC', colors: ['#003090','#FDBE11'], logo: 'https://upload.wikimedia.org/wikipedia/en/2/2d/Leicester_City_crest.svg' },
+    { name: 'Liverpool', league: 'Premier League', abbr: 'LFC', colors: ['#C8102E','#00B2A9'], logo: 'https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg' },
+    { name: 'Manchester City', league: 'Premier League', abbr: 'MCFC', colors: ['#6CABDD','#1c2c5b'], logo: 'https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg' },
+    { name: 'Manchester United', league: 'Premier League', abbr: 'MUFC', colors: ['#DA291C','#FBE122'], logo: 'https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg' },
+    { name: 'Newcastle', league: 'Premier League', abbr: 'NEW', colors: ['#241F20','#FFFFFF'] },
+    { name: 'Nottingham Forest', league: 'Premier League', abbr: 'NFO', colors: ['#DD0000','#FFFFFF'] },
+    { name: 'Tottenham', league: 'Premier League', abbr: 'TOT', colors: ['#132257','#FFFFFF'], logo: 'https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg' },
+    { name: 'West Ham', league: 'Premier League', abbr: 'WHU', colors: ['#7A263A','#1BB1E7'] },
+    { name: 'Wolves', league: 'Premier League', abbr: 'WOL', colors: ['#FDB913','#231F20'] },
+    { name: 'Ipswich', league: 'Premier League', abbr: 'IPS', colors: ['#3E83CF','#FFFFFF'] },
+    { name: 'Southampton', league: 'Premier League', abbr: 'SOU', colors: ['#D71920','#FFFFFF'] },
+
+    // ===== LIGUE 1 =====
+    { name: 'PSG', league: 'Ligue 1', abbr: 'PSG', colors: ['#004170','#DA291C'], logo: 'https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg' },
+    { name: 'Marseille', league: 'Ligue 1', abbr: 'OM', colors: ['#2FAEE0','#FFFFFF'] },
+    { name: 'Monaco', league: 'Ligue 1', abbr: 'ASM', colors: ['#CE1126','#FFFFFF'] },
+    { name: 'Lyon', league: 'Ligue 1', abbr: 'OL', colors: ['#003a70','#d4111e'] },
+    { name: 'Lille', league: 'Ligue 1', abbr: 'LOSC', colors: ['#E01E13','#003366'] },
+    { name: 'Nice', league: 'Ligue 1', abbr: 'OGCN', colors: ['#E10E1C','#000000'] },
+    { name: 'Lens', league: 'Ligue 1', abbr: 'RCL', colors: ['#FCD116','#ED1C24'] },
+    { name: 'Strasbourg', league: 'Ligue 1', abbr: 'RCSA', colors: ['#0066B3','#FFFFFF'] },
+    { name: 'Rennes', league: 'Ligue 1', abbr: 'SRFC', colors: ['#E10E1C','#000000'] },
+    { name: 'Toulouse', league: 'Ligue 1', abbr: 'TFC', colors: ['#5B2F82','#FFFFFF'] },
+    { name: 'Nantes', league: 'Ligue 1', abbr: 'FCN', colors: ['#FCD307','#247F4B'] },
+    { name: 'Brest', league: 'Ligue 1', abbr: 'SB29', colors: ['#E10D17','#FFFFFF'] },
+    { name: 'Reims', league: 'Ligue 1', abbr: 'SDR', colors: ['#E10E1C','#FFFFFF'] },
+    { name: 'Auxerre', league: 'Ligue 1', abbr: 'AJA', colors: ['#FFFFFF','#0F2C5A'] },
+    { name: 'Angers', league: 'Ligue 1', abbr: 'SCO', colors: ['#000000','#FFFFFF'] },
+    { name: 'Saint-Étienne', league: 'Ligue 1', abbr: 'ASSE', colors: ['#008B3A','#FFFFFF'] },
+    { name: 'Montpellier', league: 'Ligue 1', abbr: 'MHSC', colors: ['#F36F21','#003876'] },
+    { name: 'Bordeaux', league: 'Ligue 1', abbr: 'FCGB', colors: ['#0E224A','#FFFFFF'] },
+
+    // ===== LA LIGA =====
+    { name: 'Real Madrid', league: 'La Liga', abbr: 'RM', colors: ['#FFFFFF','#FEBE10'], logo: 'https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg' },
+    { name: 'Barcelone', league: 'La Liga', abbr: 'FCB', colors: ['#A50044','#004D98'], logo: 'https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg' },
+    { name: 'Atlético Madrid', league: 'La Liga', abbr: 'ATM', colors: ['#CB3524','#FFFFFF'], logo: 'https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg' },
+    { name: 'Athletic Bilbao', league: 'La Liga', abbr: 'ATH', colors: ['#EE2523','#FFFFFF'] },
+    { name: 'Real Sociedad', league: 'La Liga', abbr: 'RSO', colors: ['#143C8D','#FFFFFF'] },
+    { name: 'Villarreal', league: 'La Liga', abbr: 'VIL', colors: ['#FFE667','#005187'] },
+    { name: 'Real Betis', league: 'La Liga', abbr: 'BET', colors: ['#0BB363','#FFFFFF'] },
+    { name: 'Séville', league: 'La Liga', abbr: 'SEV', colors: ['#D00027','#FFFFFF'] },
+    { name: 'Valence', league: 'La Liga', abbr: 'VCF', colors: ['#FFFFFF','#F18E00'] },
+    { name: 'Celta Vigo', league: 'La Liga', abbr: 'CEL', colors: ['#8AB8E8','#FFFFFF'] },
+    { name: 'Espanyol', league: 'La Liga', abbr: 'ESP', colors: ['#005DAA','#FFFFFF'] },
+    { name: 'Mallorca', league: 'La Liga', abbr: 'MLL', colors: ['#E20613','#FFCC00'] },
+    { name: 'Girona', league: 'La Liga', abbr: 'GIR', colors: ['#CB0E0F','#FFFFFF'] },
+    { name: 'Getafe', league: 'La Liga', abbr: 'GET', colors: ['#005CA8','#FFFFFF'] },
+    { name: 'Osasuna', league: 'La Liga', abbr: 'OSA', colors: ['#D91A21','#0A346F'] },
+    { name: 'Rayo Vallecano', league: 'La Liga', abbr: 'RAY', colors: ['#FFFFFF','#E53027'] },
+    { name: 'Alavés', league: 'La Liga', abbr: 'ALA', colors: ['#0B65C1','#FFFFFF'] },
+
+    // ===== SERIE A =====
+    { name: 'Inter Milan', league: 'Serie A', abbr: 'INT', colors: ['#010E80','#000000'], logo: 'https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg' },
+    { name: 'AC Milan', league: 'Serie A', abbr: 'ACM', colors: ['#FB090B','#000000'], logo: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg' },
+    { name: 'Juventus', league: 'Serie A', abbr: 'JUV', colors: ['#000000','#FFFFFF'], logo: 'https://upload.wikimedia.org/wikipedia/commons/b/bc/Juventus_FC_2017_logo.svg' },
+    { name: 'Naples', league: 'Serie A', abbr: 'SSC', colors: ['#12A0D7','#003C82'] },
+    { name: 'Atalanta', league: 'Serie A', abbr: 'ATA', colors: ['#1C1F2A','#005EB8'] },
+    { name: 'Roma', league: 'Serie A', abbr: 'ROM', colors: ['#8E1F2F','#F0BC42'] },
+    { name: 'Lazio', league: 'Serie A', abbr: 'LAZ', colors: ['#87D8F7','#FFFFFF'] },
+    { name: 'Bologna', league: 'Serie A', abbr: 'BOL', colors: ['#1A2855','#A91E2C'] },
+    { name: 'Fiorentina', league: 'Serie A', abbr: 'FIO', colors: ['#5D2E8F','#FFFFFF'] },
+    { name: 'Torino', league: 'Serie A', abbr: 'TOR', colors: ['#8B0000','#FFFFFF'] },
+    { name: 'Udinese', league: 'Serie A', abbr: 'UDI', colors: ['#000000','#FFFFFF'] },
+    { name: 'Genoa', league: 'Serie A', abbr: 'GEN', colors: ['#C8102E','#1B3A6B'] },
+    { name: 'Como', league: 'Serie A', abbr: 'COM', colors: ['#003478','#FFFFFF'] },
+    { name: 'Lecce', league: 'Serie A', abbr: 'LEC', colors: ['#FCDD09','#E2231A'] },
+    { name: 'Verona', league: 'Serie A', abbr: 'VER', colors: ['#0066B3','#FCD116'] },
+    { name: 'Cagliari', league: 'Serie A', abbr: 'CAG', colors: ['#B11212','#1F2A66'] },
+
+    // ===== BUNDESLIGA =====
+    { name: 'Bayern Munich', league: 'Bundesliga', abbr: 'FCB', colors: ['#DC052D','#0066B2'], logo: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg' },
+    { name: 'Borussia Dortmund', league: 'Bundesliga', abbr: 'BVB', colors: ['#FDE100','#000000'], logo: 'https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg' },
+    { name: 'Bayer Leverkusen', league: 'Bundesliga', abbr: 'B04', colors: ['#E32221','#000000'] },
+    { name: 'RB Leipzig', league: 'Bundesliga', abbr: 'RBL', colors: ['#DD0741','#001F5B'] },
+    { name: 'Eintracht Frankfurt', league: 'Bundesliga', abbr: 'SGE', colors: ['#000000','#E10000'] },
+    { name: 'VfB Stuttgart', league: 'Bundesliga', abbr: 'VFB', colors: ['#E32D22','#FFFFFF'] },
+    { name: 'Wolfsburg', league: 'Bundesliga', abbr: 'WOB', colors: ['#65B32E','#FFFFFF'] },
+    { name: 'Mainz', league: 'Bundesliga', abbr: 'M05', colors: ['#C8102E','#FFFFFF'] },
+    { name: 'Fribourg', league: 'Bundesliga', abbr: 'SCF', colors: ['#5B2D8B','#E61E1E'] },
+    { name: 'Werder Bremen', league: 'Bundesliga', abbr: 'SVW', colors: ['#1D9053','#FFFFFF'] },
+    { name: 'Hoffenheim', league: 'Bundesliga', abbr: 'TSG', colors: ['#1961AC','#FFFFFF'] },
+    { name: 'Mönchengladbach', league: 'Bundesliga', abbr: 'BMG', colors: ['#000000','#00A653'] },
+    { name: 'Union Berlin', league: 'Bundesliga', abbr: 'FCU', colors: ['#EB1923','#FCDB05'] },
+    { name: 'Augsbourg', league: 'Bundesliga', abbr: 'FCA', colors: ['#BB0033','#FFFFFF'] },
+    { name: 'Schalke 04', league: 'Bundesliga', abbr: 'S04', colors: ['#004D9D','#FFFFFF'] },
+    { name: 'Hambourg', league: 'Bundesliga', abbr: 'HSV', colors: ['#0F569C','#000000'] },
+
+    // ===== AUTRES =====
+    { name: 'Porto', league: 'Autres', abbr: 'FCP', colors: ['#00428C','#FFFFFF'] },
+    { name: 'Benfica', league: 'Autres', abbr: 'SLB', colors: ['#E60026','#FFFFFF'] },
+    { name: 'Sporting CP', league: 'Autres', abbr: 'SCP', colors: ['#008057','#FFFFFF'] },
+    { name: 'Braga', league: 'Autres', abbr: 'SCB', colors: ['#C8102E','#FFFFFF'] },
+    { name: 'Ajax', league: 'Autres', abbr: 'AJX', colors: ['#D2122E','#FFFFFF'] },
+    { name: 'PSV Eindhoven', league: 'Autres', abbr: 'PSV', colors: ['#ED1C24','#FFFFFF'] },
+    { name: 'Feyenoord', league: 'Autres', abbr: 'FEY', colors: ['#CC0000','#FFFFFF'] },
+    { name: 'Anderlecht', league: 'Autres', abbr: 'AND', colors: ['#5C0F8B','#FFFFFF'] },
+    { name: 'Bruges', league: 'Autres', abbr: 'CLB', colors: ['#005FB3','#000000'] },
+    { name: 'Celtic', league: 'Autres', abbr: 'CEL', colors: ['#008752','#FFFFFF'] },
+    { name: 'Rangers', league: 'Autres', abbr: 'RAN', colors: ['#0067B3','#FFFFFF'] },
+    { name: 'Galatasaray', league: 'Autres', abbr: 'GS', colors: ['#FFB000','#A90432'] },
+    { name: 'Fenerbahçe', league: 'Autres', abbr: 'FB', colors: ['#001E5C','#FFCC00'] },
+    { name: 'Al-Nassr', league: 'Autres', abbr: 'NSR', colors: ['#FFCB05','#0A2240'] },
+    { name: 'Al-Hilal', league: 'Autres', abbr: 'HIL', colors: ['#005DA9','#FFFFFF'] },
+    { name: 'Al-Ittihad', league: 'Autres', abbr: 'ITT', colors: ['#000000','#FECF1F'] },
+    { name: 'Al-Ahli', league: 'Autres', abbr: 'AHL', colors: ['#009C49','#FFFFFF'] },
+    { name: 'Inter Miami', league: 'Autres', abbr: 'MIA', colors: ['#F7B5CD','#231F20'] },
+    { name: 'LA Galaxy', league: 'Autres', abbr: 'LAG', colors: ['#00245D','#FECB00'] },
+    { name: 'Flamengo', league: 'Autres', abbr: 'FLA', colors: ['#E2231A','#000000'] },
+    { name: 'Palmeiras', league: 'Autres', abbr: 'PAL', colors: ['#006437','#FFFFFF'] },
+    { name: 'Santos', league: 'Autres', abbr: 'SAN', colors: ['#FFFFFF','#000000'] },
+    { name: 'Boca Juniors', league: 'Autres', abbr: 'BOC', colors: ['#001F5F','#FECB00'] },
+    { name: 'River Plate', league: 'Autres', abbr: 'RIV', colors: ['#FFFFFF','#CE0E2D'] }
+  ];
+
+  // Génère un SVG inline pour un badge stylisé (utilisé comme fallback dans la lib)
+  function generateBadgeSVG(club) {
+    const [c1, c2] = club.colors;
+    return `<div class="fb" style="background:linear-gradient(135deg,${c1},${c2});">${club.abbr}</div>`;
+  }
+
+  // Génère un SVG sous forme de dataURL (utilisable comme src d'<img>)
+  function generateBadgeDataURL(club) {
+    const [c1, c2] = club.colors;
+    const safeAbbr = String(club.abbr || '').replace(/[<>&]/g, '');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs><circle cx="50" cy="50" r="48" fill="url(%23g)"/><text x="50" y="60" font-family="Impact,Anton,sans-serif" font-size="28" text-anchor="middle" fill="white" stroke="black" stroke-width="1">${safeAbbr}</text></svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  // Retourne tous les clubs (bibliothèque + ceux ajoutés par l'utilisateur)
+  function getAllClubs() {
+    return [...CLUB_LIBRARY, ...(state.userClubs || [])];
+  }
+
+  // Retourne le logo effectif d'un club : custom > original > badge fallback
+  function getEffectiveLogo(club) {
+    if (state.customLogos && state.customLogos[club.name]) return state.customLogos[club.name];
+    if (club.logo) return club.logo;
+    return generateBadgeDataURL(club);
+  }
+
+  // ============================================
+  // MODAL BIBLIOTHÈQUE
+  // ============================================
+  let currentLibrarySelector = null; // { lvlIdx, clubIdx }
+  let currentLibraryFilter = 'all';
+  let currentLibrarySearch = '';
+
+  function openLibrary(lvlIdx, clubIdx) {
+    currentLibrarySelector = { lvlIdx, clubIdx };
+    currentLibraryFilter = 'all';
+    currentLibrarySearch = '';
+    document.getElementById('librarySearch').value = '';
+    document.getElementById('libraryModal').classList.add('active');
+    renderLibraryFilters();
+    renderLibraryGrid();
+    setTimeout(() => document.getElementById('librarySearch').focus(), 100);
+  }
+
+  function closeLibrary() {
+    document.getElementById('libraryModal').classList.remove('active');
+    currentLibrarySelector = null;
+  }
+
+  function renderLibraryFilters() {
+    const allClubs = getAllClubs();
+    const leagues = ['all', ...new Set(allClubs.map(c => c.league))];
+    const labels = { all: '🌍 Tous', 'Premier League': '🏴 Premier League', 'Ligue 1': '🇫🇷 Ligue 1', 'La Liga': '🇪🇸 La Liga', 'Serie A': '🇮🇹 Serie A', 'Bundesliga': '🇩🇪 Bundesliga', 'Autres': '🌐 Autres', 'Mes clubs': '⭐ Mes clubs' };
+    const container = document.getElementById('libraryFilters');
+    container.innerHTML = leagues.map(l => `
+      <button class="filter-chip ${currentLibraryFilter === l ? 'active' : ''}" data-filter="${l}">${labels[l] || l}</button>
+    `).join('');
+    container.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        currentLibraryFilter = chip.dataset.filter;
+        renderLibraryFilters();
+        renderLibraryGrid();
+      });
+    });
+  }
+
+  let libraryEditMode = false;
+
+  function renderLibraryGrid() {
+    const search = currentLibrarySearch.toLowerCase().trim();
+    const allClubs = getAllClubs();
+    const filtered = allClubs.filter(c => {
+      const matchLeague = currentLibraryFilter === 'all' || c.league === currentLibraryFilter;
+      const matchSearch = !search || c.name.toLowerCase().includes(search) || (c.abbr || '').toLowerCase().includes(search);
+      return matchLeague && matchSearch;
+    });
+
+    const grid = document.getElementById('libraryGrid');
+    grid.classList.toggle('edit-mode', libraryEditMode);
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="lib-empty">Aucun club trouvé pour "' + search + '"</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map((club) => {
+      const fallbackUrl = generateBadgeDataURL(club);
+      const hasCustom = !!(state.customLogos && state.customLogos[club.name]);
+      const isUser = !!(state.userClubs || []).find(u => u.name === club.name);
+      // Source initiale : custom > original > fallback
+      let src;
+      if (hasCustom) src = state.customLogos[club.name];
+      else if (club.logo) src = club.logo;
+      else src = fallbackUrl;
+      const onErr = (!hasCustom && club.logo) ? ` onerror="this.onerror=null;this.src='${fallbackUrl}'"` : '';
+      const safeName = club.name.replace(/"/g, '&quot;');
+      return `
+        <div class="lib-club ${hasCustom ? 'has-custom' : ''} ${isUser ? 'is-user' : ''}" data-club-name="${safeName}">
+          <div class="lib-club-badge"><img src="${src}"${onErr}></div>
+          <div class="lib-club-name">${club.name}</div>
+          <div class="edit-overlay">
+            <button class="edit-btn" data-edit-action="upload" data-club-name="${safeName}">📤 Mettre mon logo</button>
+            ${hasCustom ? `<button class="edit-btn danger" data-edit-action="remove-custom" data-club-name="${safeName}">🗑️ Retirer custom</button>` : ''}
+            ${isUser ? `<button class="edit-btn danger" data-edit-action="delete-user" data-club-name="${safeName}">❌ Supprimer ce club</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (libraryEditMode) {
+      grid.querySelectorAll('[data-edit-action]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const action = btn.dataset.editAction;
+          const name = btn.dataset.clubName;
+          if (action === 'upload') triggerCustomLogoUpload(name);
+          else if (action === 'remove-custom') removeCustomLogo(name);
+          else if (action === 'delete-user') deleteUserClub(name);
+        });
+      });
+    } else {
+      grid.querySelectorAll('.lib-club').forEach(el => {
+        el.addEventListener('click', () => {
+          selectClubFromLibrary(el.dataset.clubName);
+        });
+      });
+    }
+  }
+
+  // Upload d'un logo personnalisé pour un club existant
+  let pendingCustomLogoClub = null;
+  function triggerCustomLogoUpload(clubName) {
+    pendingCustomLogoClub = clubName;
+    document.getElementById('customLogoInput').click();
+  }
+  document.getElementById('customLogoInput').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file || !pendingCustomLogoClub) return;
+    try {
+      let dataURL = await resizeImage(file, 400, 400, 0.95);
+      dataURL = await removeBackgroundFromLogo(dataURL);
+      if (!state.customLogos) state.customLogos = {};
+      state.customLogos[pendingCustomLogoClub] = dataURL;
+      // IMPORTANT : propager ce nouveau logo à TOUS les niveaux qui utilisent ce club
+      // (sinon la miniature de la bibliothèque change mais pas la vidéo)
+      state.levels.forEach(level => {
+        level.clubs.forEach(club => {
+          if (club.name === pendingCustomLogoClub) {
+            club.logo = dataURL;
+          }
+        });
+      });
+      saveState();
+      renderLibraryGrid();
+      renderEditor();
+    } catch(err) {
+      alert('Erreur lors du chargement du logo');
+    }
+    pendingCustomLogoClub = null;
+    e.target.value = '';
+  });
+
+  function removeCustomLogo(clubName) {
+    if (state.customLogos && state.customLogos[clubName]) {
+      delete state.customLogos[clubName];
+      saveState();
+      renderLibraryGrid();
+    }
+  }
+
+  function deleteUserClub(clubName) {
+    if (!confirm('Supprimer "' + clubName + '" de tes clubs personnalisés ?')) return;
+    state.userClubs = (state.userClubs || []).filter(c => c.name !== clubName);
+    if (state.customLogos && state.customLogos[clubName]) delete state.customLogos[clubName];
+    saveState();
+    renderLibraryGrid();
+  }
+
+  function selectClubFromLibrary(clubName) {
+    if (!currentLibrarySelector) return;
+    const club = getAllClubs().find(c => c.name === clubName);
+    if (!club) return;
+    const { lvlIdx, clubIdx } = currentLibrarySelector;
+    state.levels[lvlIdx].clubs[clubIdx].name = club.name;
+    state.levels[lvlIdx].clubs[clubIdx].logo = getEffectiveLogo(club);
+    // On stocke aussi une dataURL fallback au cas où le logo (URL Wikipedia) ne charge pas plus tard
+    state.levels[lvlIdx].clubs[clubIdx].fallback = generateBadgeDataURL(club);
+    saveState();
+    renderEditor();
+    closeLibrary();
+  }
+
+  // Bind events
+  document.getElementById('libraryClose').addEventListener('click', closeLibrary);
+  document.getElementById('libraryModal').addEventListener('click', e => {
+    if (e.target.id === 'libraryModal') closeLibrary();
+  });
+  document.getElementById('librarySearch').addEventListener('input', e => {
+    currentLibrarySearch = e.target.value;
+    renderLibraryGrid();
+  });
+
+  // Toggle mode édition
+  document.getElementById('toggleEditMode').addEventListener('click', () => {
+    libraryEditMode = !libraryEditMode;
+    document.getElementById('toggleEditMode').classList.toggle('active', libraryEditMode);
+    document.getElementById('toggleEditMode').textContent = libraryEditMode ? '✅ Terminer' : '🛠️ Modifier les logos';
+    renderLibraryGrid();
+  });
+
+  // Toggle formulaire nouveau club
+  let pendingNewClubLogo = null;
+  document.getElementById('toggleNewClubForm').addEventListener('click', () => {
+    const form = document.getElementById('newClubForm');
+    form.classList.toggle('show');
+  });
+  document.getElementById('cancelNewClub').addEventListener('click', () => {
+    document.getElementById('newClubForm').classList.remove('show');
+    resetNewClubForm();
+  });
+
+  // Sync color picker <-> text input
+  ['1', '2'].forEach(n => {
+    const picker = document.getElementById('newClubColor' + n);
+    const text = document.getElementById('newClubColor' + n + 'Text');
+    picker.addEventListener('input', () => { text.value = picker.value; });
+    text.addEventListener('input', () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
+    });
+  });
+
+  // Upload du logo pour le nouveau club
+  document.getElementById('newClubLogoInput').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      let logoDataURL = await resizeImage(file, 400, 400, 0.95);
+      pendingNewClubLogo = await removeBackgroundFromLogo(logoDataURL);
+      document.getElementById('newClubLogoLabel').textContent = '✅ Logo chargé (clique pour changer)';
+    } catch(err) {
+      alert('Erreur lors du chargement du logo');
+    }
+  });
+
+  function resetNewClubForm() {
+    document.getElementById('newClubName').value = '';
+    document.getElementById('newClubAbbr').value = '';
+    document.getElementById('newClubColor1').value = '#1e3a5f';
+    document.getElementById('newClubColor1Text').value = '#1e3a5f';
+    document.getElementById('newClubColor2').value = '#87CEEB';
+    document.getElementById('newClubColor2Text').value = '#87CEEB';
+    document.getElementById('newClubLogoLabel').textContent = 'Choisir un logo (optionnel)';
+    document.getElementById('newClubLogoInput').value = '';
+    pendingNewClubLogo = null;
+  }
+
+  document.getElementById('saveNewClub').addEventListener('click', () => {
+    const name = document.getElementById('newClubName').value.trim();
+    if (!name) { alert('Le nom du club est obligatoire'); return; }
+    const abbr = document.getElementById('newClubAbbr').value.trim().toUpperCase() || name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 4);
+    const color1 = document.getElementById('newClubColor1Text').value || '#1e3a5f';
+    const color2 = document.getElementById('newClubColor2Text').value || '#87CEEB';
+    // Vérifier qu'il n'existe pas déjà
+    const exists = getAllClubs().find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+      if (!confirm('Un club "' + exists.name + '" existe déjà. Ajouter quand même ?')) return;
+    }
+    const newClub = {
+      name,
+      abbr,
+      colors: [color1, color2],
+      league: 'Mes clubs',
+      logo: pendingNewClubLogo || null
+    };
+    if (!state.userClubs) state.userClubs = [];
+    state.userClubs.push(newClub);
+    saveState();
+    document.getElementById('newClubForm').classList.remove('show');
+    resetNewClubForm();
+    renderLibraryFilters();
+    renderLibraryGrid();
+  });
+
+  // ============================================
+  // RENDU DU PANNEAU DE PARAMÈTRES
+  // ============================================
+  const BG_OPTIONS = [
+    { id: 'stadium', label: 'Stade', class: 'bg-stadium-thumb' },
+    { id: 'field', label: 'Pelouse', class: 'bg-field-thumb' },
+    { id: 'night', label: 'Nuit', class: 'bg-night-thumb' },
+    { id: 'red', label: 'Passion', class: 'bg-red-thumb' },
+    { id: 'neon', label: 'Néon', class: 'bg-neon-thumb' },
+    { id: 'gold', label: 'Or', class: 'bg-gold-thumb' },
+    { id: 'white', label: 'Clair', class: 'bg-white-thumb' },
+    { id: 'wave', label: 'Vague', class: 'bg-wave-thumb' },
+    { id: 'custom', label: 'Mon image', class: 'bg-custom-thumb' }
+  ];
+
+  function renderSettings() {
+    const s = state.settings;
+    const panel = document.getElementById('settingsPanel');
+    panel.innerHTML = `
+      <div class="settings-panel">
+        <div class="section-title">
+          <div class="icon">⚙️</div>
+          <h3>PARAMÈTRES GLOBAUX</h3>
+        </div>
+
+        <div class="setting-block" style="margin-bottom: 24px;">
+          <div class="setting-label">🎨 Fond de la vidéo</div>
+          <div class="bg-options">
+            ${BG_OPTIONS.map(opt => `
+              <div class="bg-option ${opt.class} ${s.background === opt.id ? 'active' : ''} ${opt.id === 'custom' && s.customBg ? 'has-image' : ''}"
+                   data-bg="${opt.id}"
+                   ${opt.id === 'custom' && s.customBg ? `style="background-image: url('${s.customBg}');"` : ''}>
+                ${opt.id === 'custom' && !s.customBg ? '<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);">📷</span>' : ''}
+                <div class="bg-label">${opt.label}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="custom-bg-upload ${s.background === 'custom' ? 'show' : ''}" id="customBgUpload">
+            <label class="upload-btn" style="margin-top: 12px; display: block;">
+              ${s.customBg ? '🖼️ Changer l\'image de fond' : '🖼️ Uploade ton image de fond'}
+              <input type="file" accept="image/*" id="customBgInput">
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="setting-block">
+            <div class="setting-label">⚡ Apparition des clubs</div>
+            <div class="toggle-group">
+              <button class="toggle-option ${s.clubsReveal === 'sequential' ? 'active' : ''}" data-reveal="sequential">
+                <span class="icon">🐢</span>Un par un
+              </button>
+              <button class="toggle-option ${s.clubsReveal === 'simultaneous' ? 'active' : ''}" data-reveal="simultaneous">
+                <span class="icon">⚡</span>Tous d'un coup
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-block">
+            <div class="setting-label">⏱️ Durée du décompte</div>
+            <div class="countdown-control">
+              <input type="range" min="3" max="8" step="1" value="${s.countdownDuration}" id="countdownRange">
+              <div class="countdown-value"><span id="countdownVal">${s.countdownDuration}</span>s</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-row" style="margin-top: 16px;">
+          <div class="setting-block">
+            <div class="setting-label">🎬 Intro "99% échouent"</div>
+            <div class="toggle-group">
+              <button class="toggle-option ${s.showHook ? 'active' : ''}" data-hook="true">
+                <span class="icon">✅</span>Afficher
+              </button>
+              <button class="toggle-option ${!s.showHook ? 'active' : ''}" data-hook="false">
+                <span class="icon">❌</span>Masquer
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-block">
+            <div class="setting-label">💬 Outro "T'as eu lequel ?"</div>
+            <div class="toggle-group">
+              <button class="toggle-option ${s.showOutro ? 'active' : ''}" data-outro="true">
+                <span class="icon">✅</span>Afficher
+              </button>
+              <button class="toggle-option ${!s.showOutro ? 'active' : ''}" data-outro="false">
+                <span class="icon">❌</span>Masquer
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-row" style="margin-top: 16px;">
+          <div class="setting-block" style="grid-column: 1 / -1;">
+            <div class="setting-label">🛡️ Style des logos</div>
+            <div class="toggle-group">
+              <button class="toggle-option ${s.logoStyle === 'plain' ? 'active' : ''}" data-logo-style="plain">
+                <span class="icon">🎨</span>Sans fond (comme TikTok)
+              </button>
+              <button class="toggle-option ${s.logoStyle === 'circle' ? 'active' : ''}" data-logo-style="circle">
+                <span class="icon">⚪</span>Cercle blanc
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-row" style="margin-top: 16px;">
+          <div class="setting-block" style="grid-column: 1 / -1;">
+            <div class="setting-label">👤 Silhouette du joueur</div>
+            <div class="toggle-group">
+              <button class="toggle-option ${!s.useCustomSilhouette ? 'active' : ''}" data-silhouette="false">
+                <span class="icon">👥</span>Générique (recommandé)
+              </button>
+              <button class="toggle-option ${s.useCustomSilhouette ? 'active' : ''}" data-silhouette="true">
+                <span class="icon">📸</span>Depuis la photo
+              </button>
+            </div>
+            <p style="font-size: 11px; color: var(--text-dim); margin-top: 8px; line-height: 1.4;">
+              "Depuis la photo" essaie de découper le joueur depuis ta photo. Le résultat dépend de la qualité du fond de la photo (fond uni = bon résultat, stade flou = résultat aléatoire).
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bindSettingsEvents();
+  }
+
+  function bindSettingsEvents() {
+    // Choix du fond
+    document.querySelectorAll('.bg-option').forEach(el => {
+      el.addEventListener('click', () => {
+        state.settings.background = el.dataset.bg;
+        saveState();
+        renderSettings();
+      });
+    });
+
+    // Upload du fond personnalisé
+    const customInput = document.getElementById('customBgInput');
+    if (customInput) {
+      customInput.addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          state.settings.customBg = await resizeImage(file, 1080, 1920, 0.85);
+          saveState();
+          renderSettings();
+        } catch(err) {
+          alert('Erreur lors du chargement de l\'image');
+        }
+      });
+    }
+
+    // Toggle apparition clubs
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      el.addEventListener('click', () => {
+        state.settings.clubsReveal = el.dataset.reveal;
+        saveState();
+        renderSettings();
+      });
+    });
+
+    // Countdown duration
+    const range = document.getElementById('countdownRange');
+    if (range) {
+      range.addEventListener('input', e => {
+        state.settings.countdownDuration = parseInt(e.target.value);
+        document.getElementById('countdownVal').textContent = e.target.value;
+        saveState();
+      });
+    }
+
+    // Toggle hook
+    document.querySelectorAll('[data-hook]').forEach(el => {
+      el.addEventListener('click', () => {
+        state.settings.showHook = el.dataset.hook === 'true';
+        saveState();
+        renderSettings();
+      });
+    });
+
+    // Toggle outro
+    document.querySelectorAll('[data-outro]').forEach(el => {
+      el.addEventListener('click', () => {
+        state.settings.showOutro = el.dataset.outro === 'true';
+        saveState();
+        renderSettings();
+      });
+    });
+
+    // Toggle logo style
+    document.querySelectorAll('[data-logo-style]').forEach(el => {
+      el.addEventListener('click', () => {
+        state.settings.logoStyle = el.dataset.logoStyle;
+        saveState();
+        renderSettings();
+      });
+    });
+
+    // Toggle silhouette type
+    document.querySelectorAll('[data-silhouette]').forEach(el => {
+      el.addEventListener('click', () => {
+        state.settings.useCustomSilhouette = el.dataset.silhouette === 'true';
+        saveState();
+        renderSettings();
+      });
+    });
+  }
+
+  // ============================================
+  // RENDU DE L'ÉDITEUR
+  // ============================================
+  function renderEditor() {
+    const editor = document.getElementById('editor');
+    editor.innerHTML = state.levels.map((lvl, lvlIdx) => `
+      <div class="level-card ${lvl.class}">
+        <div class="level-header">
+          <div class="level-number">${lvlIdx + 1}</div>
+          <div>
+            <div class="level-title">NIVEAU ${lvlIdx + 1} — ${lvl.label}</div>
+            <div class="level-subtitle">Configure les 3 clubs et le joueur à deviner</div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="field-group">
+            <h3>👤 Joueur</h3>
+            <div class="field">
+              <label>Photo du joueur (au reveal)</label>
+              <div class="upload-zone">
+                <div class="upload-preview">
+                  ${lvl.player.photo ? `<img src="${lvl.player.photo}">` : '<span class="placeholder">📷</span>'}
+                </div>
+                <label class="upload-btn">
+                  ${lvl.player.photo ? 'Changer la photo' : 'Choisir une photo'}
+                  <input type="file" accept="image/*" data-type="player-photo" data-lvl="${lvlIdx}">
+                </label>
+              </div>
+            </div>
+            <div class="field">
+              <label>Nom du joueur</label>
+              <input type="text" data-type="player-name" data-lvl="${lvlIdx}" value="${lvl.player.name}">
+            </div>
+            <div class="field">
+              <label>Drapeau / Nationalité</label>
+              <div class="flag-field">
+                <div class="flag-preview">
+                  ${lvl.player.flag ? `<img src="${getFlagURL(lvl.player.flag, 80)}" onerror="this.style.display='none'">` : '<span style="color: var(--text-dim); font-size: 12px;">—</span>'}
+                </div>
+                <select data-type="player-flag" data-lvl="${lvlIdx}" class="flag-select">
+                  <option value="">— Aucun drapeau —</option>
+                  ${['Europe', 'Afrique', 'Amérique du Sud', 'Amérique du Nord', 'Asie'].map(region => `
+                    <optgroup label="${region}">
+                      ${COUNTRIES.filter(c => c.region === region).map(c => `
+                        <option value="${c.code}" ${lvl.player.flag === c.code ? 'selected' : ''}>${c.name}</option>
+                      `).join('')}
+                    </optgroup>
+                  `).join('')}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <h3>⚽ Les 3 clubs (dans l'ordre)</h3>
+            ${lvl.clubs.map((c, cIdx) => `
+              <div class="club-block">
+                <div class="club-label">Club ${cIdx + 1}</div>
+                <div class="upload-zone" style="margin-bottom: 10px;">
+                  <div class="upload-preview">
+                    ${c.logo ? `<img src="${c.logo}" onerror="this.onerror=null;this.src='${c.fallback || generateBadgeDataURL({abbr: getShortBadge(c.name), colors:['#4b5563','#1f2937']})}'">` : '<span class="placeholder">🛡️</span>'}
+                  </div>
+                  <div style="flex: 1;">
+                    <input type="text" data-type="club-name" data-lvl="${lvlIdx}" data-club="${cIdx}" value="${c.name}" placeholder="Nom du club" style="width: 100%;">
+                    <div class="logo-action-row">
+                      <button class="lib-btn" data-action="open-library" data-lvl="${lvlIdx}" data-club="${cIdx}">📚 Bibliothèque</button>
+                      <label class="upload-btn" style="margin: 0;">
+                        📁 Upload
+                        <input type="file" accept="image/*" data-type="club-logo" data-lvl="${lvlIdx}" data-club="${cIdx}">
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    bindEditorEvents();
+  }
+
+  function bindEditorEvents() {
+    // Inputs texte
+    document.querySelectorAll('#editor input[type="text"]').forEach(input => {
+      input.addEventListener('input', e => {
+        const lvl = parseInt(e.target.dataset.lvl);
+        const type = e.target.dataset.type;
+        const val = e.target.value;
+        if (type === 'player-name') state.levels[lvl].player.name = val;
+        else if (type === 'player-flag') state.levels[lvl].player.flag = val;
+        else if (type === 'club-name') state.levels[lvl].clubs[parseInt(e.target.dataset.club)].name = val;
+        saveState();
+      });
+    });
+
+    // Selects (drapeaux)
+    document.querySelectorAll('#editor select').forEach(sel => {
+      sel.addEventListener('change', e => {
+        const lvl = parseInt(e.target.dataset.lvl);
+        const type = e.target.dataset.type;
+        if (type === 'player-flag') {
+          state.levels[lvl].player.flag = e.target.value;
+          saveState();
+          renderEditor(); // rerender pour mettre à jour la preview du drapeau
+        }
+      });
+    });
+
+    // Upload de fichiers
+    document.querySelectorAll('#editor input[type="file"]').forEach(input => {
+      input.addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const type = e.target.dataset.type;
+        const lvl = parseInt(e.target.dataset.lvl);
+        try {
+          if (type === 'club-logo') {
+            const cIdx = parseInt(e.target.dataset.club);
+            let logoDataURL = await resizeImage(file, 400, 400, 0.95);
+            logoDataURL = await removeBackgroundFromLogo(logoDataURL);
+            state.levels[lvl].clubs[cIdx].logo = logoDataURL;
+          } else if (type === 'player-photo') {
+            const photoDataURL = await resizeImage(file, 700, 1000);
+            state.levels[lvl].player.photo = photoDataURL;
+            // Génère aussi une silhouette à partir de cette photo
+            const silhouette = await generateSilhouetteFromPhoto(photoDataURL);
+            if (silhouette) state.levels[lvl].player.silhouette = silhouette;
+          }
+          saveState();
+          renderEditor();
+        } catch(err) {
+          alert('Erreur lors du chargement de l\'image');
+        }
+      });
+    });
+
+    // Boutons "Bibliothèque"
+    document.querySelectorAll('[data-action="open-library"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lvl = parseInt(btn.dataset.lvl);
+        const club = parseInt(btn.dataset.club);
+        openLibrary(lvl, club);
+      });
+    });
+  }
+
+  // ============================================
+  // ANIMATION (logique de lecture)
+  // ============================================
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  
+  function showScene(id) {
+    document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+    if (id) document.getElementById(id).classList.add('active');
+  }
+
+  function buildBadge(badgeEl, club) {
+    badgeEl.innerHTML = '';
+    // Custom logo de la bibliothèque a priorité sur le logo stocké
+    const effectiveLogo = (state.customLogos && state.customLogos[club.name]) || club.logo;
+    if (effectiveLogo) {
+      const img = document.createElement('img');
+      img.src = effectiveLogo;
+      img.onerror = function() {
+        img.onerror = null;
+        if (club.fallback) {
+          img.src = club.fallback;
+        } else {
+          const fakeClub = { abbr: getShortBadge(club.name), colors: ['#4b5563', '#1f2937'] };
+          img.src = generateBadgeDataURL(fakeClub);
+        }
+      };
+      badgeEl.appendChild(img);
+    } else {
+      const fb = document.createElement('div');
+      fb.className = 'badge-fallback';
+      fb.textContent = getShortBadge(club.name);
+      badgeEl.appendChild(fb);
+    }
+  }
+
+  function buildReveal(level) {
+    const photo = document.getElementById('revealPhoto');
+    photo.innerHTML = '';
+    if (level.player.photo) {
+      const img = document.createElement('img');
+      img.src = level.player.photo;
+      photo.appendChild(img);
+    } else {
+      const initials = document.createElement('div');
+      initials.className = 'reveal-initials';
+      initials.textContent = getInitials(level.player.name);
+      photo.appendChild(initials);
+    }
+  }
+
+  async function playLevel(level, num) {
+    const banner = document.getElementById('levelBanner');
+    banner.className = 'level-banner ' + level.class;
+    banner.textContent = 'NIVEAU ' + num + ' — ' + level.label;
+
+    // Silhouette : custom si dispo ET activée, sinon générique
+    const silEl = document.getElementById('silhouette');
+    if (state.settings.useCustomSilhouette && level.player.silhouette) {
+      silEl.className = 'silhouette custom';
+      silEl.innerHTML = `<img src="${level.player.silhouette}">`;
+    } else {
+      silEl.className = 'silhouette';
+      silEl.innerHTML = '';
+    }
+
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('club' + i).classList.remove('show');
+    }
+    level.clubs.forEach((c, i) => {
+      const idx = i + 1;
+      buildBadge(document.getElementById('badge' + idx), c);
+      document.getElementById('name' + idx).textContent = c.name;
+    });
+    const cdDuration = state.settings.countdownDuration || 5;
+    document.getElementById('countdown').textContent = cdDuration;
+    document.getElementById('countdown').classList.remove('urgent');
+
+    showScene('scene-question');
+    await sleep(600);
+
+    // Apparition des clubs : séquentielle ou simultanée
+    if (state.settings.clubsReveal === 'simultaneous') {
+      document.getElementById('club1').classList.add('show');
+      document.getElementById('club2').classList.add('show');
+      document.getElementById('club3').classList.add('show');
+      await sleep(1400);
+    } else {
+      document.getElementById('club1').classList.add('show');
+      await sleep(900);
+      document.getElementById('club2').classList.add('show');
+      await sleep(900);
+      document.getElementById('club3').classList.add('show');
+      await sleep(800);
+    }
+
+    const cd = document.getElementById('countdown');
+    for (let n = cdDuration; n >= 1; n--) {
+      cd.textContent = n;
+      if (n <= 2) cd.classList.add('urgent');
+      await sleep(600);
+    }
+
+    buildReveal(level);
+    document.getElementById('revealName').textContent = level.player.name.toUpperCase();
+    const flagEl = document.getElementById('revealFlag');
+    if (level.player.flag) {
+      const code = level.player.flag;
+      flagEl.innerHTML = `<img src="${getFlagURL(code, 320)}" onerror="this.outerHTML='<span class=&quot;flag-text&quot;>${code}</span>'">`;
+    } else {
+      flagEl.innerHTML = '';
+    }
+    showScene('scene-reveal');
+    await sleep(2800);
+  }
+
+  function applyStageBackground() {
+    const stage = document.getElementById('stage');
+    // Reset toutes les classes bg-*
+    stage.className = 'stage';
+    stage.style.backgroundImage = '';
+    const bg = state.settings.background || 'stadium';
+    stage.classList.add('bg-' + bg);
+    if (bg === 'custom' && state.settings.customBg) {
+      stage.style.backgroundImage = `url('${state.settings.customBg}')`;
+    }
+    // Style des logos (avec ou sans cercle blanc)
+    if (state.settings.logoStyle === 'circle') {
+      stage.classList.add('logo-circle');
+    }
+  }
+
+  // Précharge toutes les images du quiz. Si une URL ne charge pas, on la remplace 
+  // par un badge fallback aux couleurs du club, directement dans le state.
+  function checkImageLoads(url) {
+    return new Promise(resolve => {
+      if (!url || url.startsWith('data:')) { resolve(true); return; }
+      const img = new Image();
+      let done = false;
+      const finish = ok => { if (!done) { done = true; resolve(ok); } };
+      img.onload = () => finish(true);
+      img.onerror = () => finish(false);
+      img.src = url;
+      // Timeout après 8 secondes (généreux pour permettre le chargement)
+      setTimeout(() => finish(false), 8000);
+    });
+  }
+
+  async function preloadAndFixImages() {
+    const tasks = [];
+    state.levels.forEach((level, lvlIdx) => {
+      level.clubs.forEach((club, cIdx) => {
+        if (club.logo && !club.logo.startsWith('data:')) {
+          tasks.push((async () => {
+            const ok = await checkImageLoads(club.logo);
+            if (!ok) {
+              // Remplace par le fallback : soit celui déjà stocké, soit on en génère un
+              const fallback = club.fallback || generateBadgeDataURL({
+                abbr: getShortBadge(club.name),
+                colors: ['#4b5563', '#1f2937']
+              });
+              state.levels[lvlIdx].clubs[cIdx].logo = fallback;
+            }
+          })());
+        }
+      });
+      // Photo du joueur
+      if (level.player.photo && !level.player.photo.startsWith('data:')) {
+        tasks.push((async () => {
+          const ok = await checkImageLoads(level.player.photo);
+          if (!ok) {
+            // On retire la photo, l'animation affichera les initiales automatiquement
+            state.levels[lvlIdx].player.photo = null;
+          }
+        })());
+      }
+    });
+    await Promise.all(tasks);
+    saveState();
+  }
+
+  async function playAnimation() {
+    applyStageBackground();
+    // Précharge et corrige les images cassées avant de lancer
+    await preloadAndFixImages();
+    if (state.settings.showHook) {
+      showScene('scene-hook');
+      await sleep(2000);
+    }
+    for (let i = 0; i < state.levels.length; i++) {
+      await playLevel(state.levels[i], i + 1);
+    }
+    if (state.settings.showOutro) {
+      showScene('scene-outro');
+      await sleep(2500);
+    }
+    showScene(null);
+  }
+
+  // ============================================
+  // APERÇU
+  // ============================================
+  document.getElementById('previewBtn').addEventListener('click', async () => {
+    document.getElementById('previewOverlay').classList.add('active');
+    await sleep(300);
+    await playAnimation();
+  });
+  document.getElementById('closePreview').addEventListener('click', () => {
+    document.getElementById('previewOverlay').classList.remove('active');
+    showScene(null);
+  });
+
+  // ============================================
+  // RESET
+  // ============================================
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('Réinitialiser toutes les données ? Les images uploadées et clubs personnalisés seront perdus.')) {
+      localStorage.removeItem('quiz-foot-state');
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      renderSettings();
+      renderEditor();
+    }
+  });
+
+  // ============================================
+  // DÉTECTION MOBILE
+  // ============================================
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+                   (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+
+  // ============================================
+  // EXPORT / IMPORT DES DONNÉES (.json)
+  // ============================================
+  document.getElementById('exportDataBtn').addEventListener('click', () => {
+    try {
+      const json = JSON.stringify(state, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `quiz-foot-sauvegarde-${date}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch(err) {
+      alert('Erreur lors de l\'export : ' + err.message);
+    }
+  });
+
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importInput').click();
+  });
+  document.getElementById('importInput').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const imported = JSON.parse(text);
+      if (!imported.levels || !Array.isArray(imported.levels)) {
+        throw new Error('Format invalide : la sauvegarde ne contient pas de niveaux');
+      }
+      const choice = confirm(
+        'Importer cette sauvegarde ?\n\n' +
+        '• OK = remplacer toutes tes données actuelles\n' +
+        '• Annuler = ne rien faire\n\n' +
+        `(${imported.levels.length} niveaux, ${Object.keys(imported.customLogos || {}).length} logos perso, ${(imported.userClubs || []).length} clubs perso)`
+      );
+      if (!choice) { e.target.value = ''; return; }
+      // Migration : assure que tous les champs existent
+      if (!imported.settings) imported.settings = JSON.parse(JSON.stringify(DEFAULT_STATE.settings));
+      imported.settings = Object.assign({}, DEFAULT_STATE.settings, imported.settings);
+      if (!imported.customLogos) imported.customLogos = {};
+      if (!imported.userClubs) imported.userClubs = [];
+      state = imported;
+      saveState();
+      renderSettings();
+      renderEditor();
+      alert('✅ Sauvegarde importée avec succès !');
+    } catch(err) {
+      alert('Erreur lors de l\'import : ' + err.message);
+    }
+    e.target.value = '';
+  });
+
+  // ============================================
+  // EXPORT VIDÉO via MediaRecorder (desktop) ou mode présentation (mobile)
+  // ============================================
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    // Sur mobile, on n'a pas de MediaRecorder → mode présentation plein écran
+    // L'utilisateur enregistre via l'enregistreur natif iOS/Android
+    if (isMobile || !navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      showMobileExportModal();
+    } else {
+      document.getElementById('exportModal').classList.add('active');
+    }
+  });
+
+  function showMobileExportModal() {
+    // Crée dynamiquement une modale d'instructions mobile
+    let modal = document.getElementById('mobileExportModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'mobileExportModal';
+      modal.className = 'modal';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <h2>📱 Enregistrement sur mobile</h2>
+          <p>Sur smartphone, utilise l'enregistreur d'écran intégré de ton téléphone :</p>
+          <ol>
+            <li><strong>iPhone</strong> : balaie depuis le coin haut-droit (centre de contrôle) → bouton ⏺ Enregistrement d'écran<br>
+                <strong>Android</strong> : balaie depuis le haut → bouton 📹 Enregistreur d'écran (ou télécharge "AZ Screen Recorder" si absent)</li>
+            <li>Démarre l'enregistrement d'écran de ton téléphone</li>
+            <li>Reviens ici et clique <strong>▶ Lancer en plein écran</strong></li>
+            <li>L'animation joue automatiquement</li>
+            <li>Quand fini, arrête l'enregistrement d'écran (icône rouge en haut)</li>
+            <li>Tu retrouves la vidéo dans ta galerie photo</li>
+          </ol>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" id="cancelMobileExport">Annuler</button>
+            <button class="btn btn-primary" id="startMobilePresentation">▶ Lancer en plein écran</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.getElementById('cancelMobileExport').addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+      document.getElementById('startMobilePresentation').addEventListener('click', async () => {
+        modal.classList.remove('active');
+        const overlay = document.getElementById('previewOverlay');
+        overlay.classList.add('active');
+        try {
+          if (overlay.requestFullscreen) await overlay.requestFullscreen();
+          else if (overlay.webkitRequestFullscreen) await overlay.webkitRequestFullscreen();
+        } catch(e) {}
+        await sleep(500);
+        await playAnimation();
+        await sleep(1500);
+        if (document.fullscreenElement) await document.exitFullscreen().catch(()=>{});
+        overlay.classList.remove('active');
+      });
+    }
+    modal.classList.add('active');
+  }
+
+  document.getElementById('cancelExport').addEventListener('click', () => {
+    document.getElementById('exportModal').classList.remove('active');
+  });
+
+  document.getElementById('startExport').addEventListener('click', async () => {
+    document.getElementById('exportModal').classList.remove('active');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      alert('Ton navigateur ne supporte pas l\'enregistrement automatique. Utilise Chrome ou Edge récent.');
+      return;
+    }
+
+    // Active l'aperçu et tente le mode plein écran AVANT getDisplayMedia
+    // (pour ne capturer que la scène, sans la barre d'onglets Chrome)
+    const overlay = document.getElementById('previewOverlay');
+    overlay.classList.add('active');
+    try {
+      if (overlay.requestFullscreen) {
+        await overlay.requestFullscreen();
+      } else if (overlay.webkitRequestFullscreen) {
+        await overlay.webkitRequestFullscreen();
+      }
+    } catch(e) {
+      console.warn('Plein écran refusé, on continue quand même');
+    }
+    await sleep(300); // laisse le temps au plein écran de s'activer
+
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30 },
+        audio: false,
+        preferCurrentTab: true  // suggère "Cet onglet" en premier
+      });
+    } catch(err) {
+      // Sort du plein écran si capture annulée
+      if (document.fullscreenElement) await document.exitFullscreen().catch(()=>{});
+      overlay.classList.remove('active');
+      alert('Tu as annulé la capture, ou ton navigateur a refusé.');
+      return;
+    }
+
+    const mimeTypes = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    let chosenMime = '';
+    for (const mt of mimeTypes) {
+      if (MediaRecorder.isTypeSupported(mt)) { chosenMime = mt; break; }
+    }
+
+    const recorder = new MediaRecorder(stream, { 
+      mimeType: chosenMime, 
+      videoBitsPerSecond: 5000000 
+    });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quiz-foot-' + Date.now() + '.webm';
+      a.click();
+      URL.revokeObjectURL(url);
+      document.getElementById('exportStatus').style.display = 'none';
+      // Sort du plein écran à la fin
+      if (document.fullscreenElement) await document.exitFullscreen().catch(()=>{});
+    };
+
+    document.getElementById('exportStatus').style.display = 'flex';
+    document.getElementById('exportStatusText').textContent = 'Enregistrement en cours...';
+
+    recorder.start();
+    await sleep(500);
+    await playAnimation();
+    await sleep(300);
+    recorder.stop();
+    document.getElementById('exportStatusText').textContent = 'Téléchargement de la vidéo...';
+    await sleep(1000);
+    overlay.classList.remove('active');
+    showScene(null);
+  });
+
+  // ============================================
+  // INIT
+  // ============================================
+  loadState();
+  renderSettings();
+  renderEditor();
+  // Précharge les images en arrière-plan (silencieux, non bloquant)
+  // pour qu'elles soient en cache au moment de lancer l'animation
+  setTimeout(() => { preloadAndFixImages().catch(()=>{}); }, 500);
+</script>
+</body>
+</html>
