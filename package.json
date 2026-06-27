@@ -1,0 +1,9 @@
+{
+  "name": "quiz-foot-generator",
+  "version": "1.0.0",
+  "description": "Quiz Foot Generator - TikTok video maker",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
